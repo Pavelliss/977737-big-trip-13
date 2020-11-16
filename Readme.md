@@ -1,7 +1,7 @@
 # Проект «Большое путешествие» [![Build status][travis-image]][travis-url]
 
 * Студент: [Karl Gustav](https://up.htmlacademy.ru/ecmascript/13/user/977737).
-* Наставник: `Неизвестно`.
+* Наставник: `Иван Кривонос`.
 
 ---
 
