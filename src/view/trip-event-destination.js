@@ -15,4 +15,5 @@ const tripEventDestination = () => {
   </section>`;
 };
 
-export {tripEventDestination}
+export {tripEventDestination};
+
