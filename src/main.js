@@ -1,4 +1,4 @@
-import {render} from "./util/render";
+import {render} from "./utils/render";
 
 const EVENT_COUNT = 9;
 
