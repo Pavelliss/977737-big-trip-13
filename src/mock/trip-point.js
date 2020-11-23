@@ -91,14 +91,14 @@ const generateTripPoint = () => {
       },
     ],
     isFavorite: Boolean(getRandomInteger(0, 1)),
+    destinationOptions: generateDestinationOptionList(),
     destination: {
       photos: [
         `http://picsum.photos/248/152?r=${Math.random()}`,
         `http://picsum.photos/248/152?r=${Math.random()}`,
         `http://picsum.photos/248/152?r=${Math.random()}`
       ],
-      description: getRandomListElement(DESCRIPTIONS),
-      options: generateDestinationOptionList(),
+      description: getRandomListElement(DESCRIPTIONS)
     },
   };
 };

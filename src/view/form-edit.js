@@ -1,9 +1,17 @@
+import dayjs from "dayjs";
+import {nanoid} from "nanoid";
+
 import {tripEventOffersTemplate} from "./trip-event-offers";
 import {tripEventDestination} from "./trip-event-destination";
 import {makeСapitalizedLetter} from "../utils/util";
 import {routeTypes} from "../const";
 
+
 const createDestinationOptionTemplate = (options) => {
+  if (options === null) {
+    return ``;
+  }
+
   return options.map((option) => {
     return `<option value="${option}"></option>`;
   });
@@ -18,11 +26,30 @@ const createTripEventTypeTemplate = (id, routeType) => {
   }).join(``);
 };
 
-const formEditTemplate = (tripPoint) => {
+const createNewEvent = () => {
+  return {
+    id: nanoid(),
+    routeType: `flight`,
+    city: ``,
+    time: {
+      start: dayjs(),
+      end: dayjs()
+    },
+    price: ``,
+    destinationOptions: null,
+    offers: null,
+    isFavorite: false,
+    destination: null,
+  };
+};
+
+const formEditTemplate = (tripPoint = createNewEvent()) => {
   const {
     id,
     routeType,
     destination,
+    destinationOptions,
+    time,
     offers
   } = tripPoint;
   return `<form class="event event--edit" action="#" method="post">
@@ -48,16 +75,16 @@ const formEditTemplate = (tripPoint) => {
         </label>
         <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="" list="destination-list-${id}">
         <datalist id="destination-list-${id}">
-          ${createDestinationOptionTemplate(destination.options)}
+          ${createDestinationOptionTemplate(destinationOptions)}
         </datalist>
       </div>
 
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-${id}">From</label>
-        <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="19/03/19 00:00">
+        <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dayjs(time.start).format(`DD/MM/YYYY HH:mm `)}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-${id}">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="19/03/19 00:00">
+        <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dayjs(time.start).format(`DD/MM/YYYY HH:mm `)}">
       </div>
 
       <div class="event__field-group  event__field-group--price">
