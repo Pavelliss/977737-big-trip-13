@@ -47,50 +47,50 @@ const generateTripPoint = () => {
       {
         name: `Rent a car`,
         price: 200,
-        isChecked: Boolean(getRandomInteger(0, 1))
+        isChecked: !getRandomInteger(0, 1)
       },
       {
         name: `Add breakfast`,
         price: 50,
-        isChecked: Boolean(getRandomInteger(0, 1))
+        isChecked: !getRandomInteger(0, 1)
       },
       {
         name: `Book tickets`,
         price: 40,
-        isChecked: Boolean(getRandomInteger(0, 1))
+        isChecked: !getRandomInteger(0, 1)
       },
       {
         name: `Lunch in city`,
         price: 30,
-        isChecked: Boolean(getRandomInteger(0, 1))
+        isChecked: !getRandomInteger(0, 1)
       },
       {
         name: `Add luggage`,
         price: 30,
-        isChecked: Boolean(getRandomInteger(0, 1))
+        isChecked: !getRandomInteger(0, 1)
       },
       {
         name: `Switch to comfort class`,
         price: 100,
-        isChecked: Boolean(getRandomInteger(0, 1))
+        isChecked: !getRandomInteger(0, 1)
       },
       {
         name: `Add meal`,
         price: 15,
-        isChecked: Boolean(getRandomInteger(0, 1))
+        isChecked: !getRandomInteger(0, 1)
       },
       {
         name: `Choose seats`,
         price: 5,
-        isChecked: Boolean(getRandomInteger(0, 1))
+        isChecked: !getRandomInteger(0, 1)
       },
       {
         name: `Travel by train`,
         price: 50,
-        isChecked: Boolean(getRandomInteger(0, 1))
+        isChecked: !getRandomInteger(0, 1)
       },
     ],
-    isFavorite: Boolean(getRandomInteger(0, 1)),
+    isFavorite: !getRandomInteger(0, 1),
     destinationOptions: generateDestinationOptionList(),
     destination: {
       photos: [
