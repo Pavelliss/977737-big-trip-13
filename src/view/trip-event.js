@@ -1,5 +1,6 @@
 import dayjs from "dayjs";
 import {TimeMS} from "../const";
+import {createElement} from "../utils/render";
 
 const MAX_LENGTH_OFFER = 17;
 
@@ -88,4 +89,27 @@ const tripEventTemplate = (tripPoint) => {
   </div>`;
 };
 
-export {tripEventTemplate};
+class TripEvent {
+  constructor(tripPoint) {
+    this._tripPoint = tripPoint;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return tripEventTemplate(this._tripPoint);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
+export default TripEvent;

@@ -4,8 +4,23 @@ import {nanoid} from "nanoid";
 import {tripEventOffersTemplate} from "./trip-event-offers";
 import {tripEventDestination} from "./trip-event-destination";
 import {makeСapitalizedLetter} from "../utils/util";
+import {createElement} from "../utils/render";
 import {routeTypes} from "../const";
 
+const BLANK_NEW_EVENT = {
+  id: nanoid(),
+  routeType: `flight`,
+  city: ``,
+  time: {
+    start: dayjs(),
+    end: dayjs()
+  },
+  price: ``,
+  destinationOptions: null,
+  offers: null,
+  isFavorite: false,
+  destination: null,
+};
 
 const createDestinationOptionTemplate = (options) => {
   if (options === null) {
@@ -26,24 +41,7 @@ const createTripEventTypeTemplate = (id, routeType) => {
   }).join(``);
 };
 
-const createNewEvent = () => {
-  return {
-    id: nanoid(),
-    routeType: `flight`,
-    city: ``,
-    time: {
-      start: dayjs(),
-      end: dayjs()
-    },
-    price: ``,
-    destinationOptions: null,
-    offers: null,
-    isFavorite: false,
-    destination: null,
-  };
-};
-
-const formEditTemplate = (tripPoint = createNewEvent()) => {
+const formEditTemplate = (tripPoint, isEdit = true) => {
   const {
     id,
     routeType,
@@ -96,7 +94,10 @@ const formEditTemplate = (tripPoint = createNewEvent()) => {
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-      <button class="event__reset-btn" type="reset">Cancel</button>
+      <button class="event__reset-btn" type="reset">${isEdit ? `Delete` : `Cancel`}</button>
+      <button class="event__rollup-btn" type="button">
+      <span class="visually-hidden">Open event</span>
+      </button>
     </header>
     <section class="event__details">
       ${offers !== null ? tripEventOffersTemplate(id, offers) : ``}
@@ -105,4 +106,27 @@ const formEditTemplate = (tripPoint = createNewEvent()) => {
   </form>`;
 };
 
-export {formEditTemplate};
+class FormEdit {
+  constructor(tripPoint = BLANK_NEW_EVENT) {
+    this._tripPoint = tripPoint;
+    this._element = null;
+  }
+
+  getTemplate() {
+    return formEditTemplate(this._tripPoint);
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
+export default FormEdit;
