@@ -1,14 +1,17 @@
 import dayjs from "dayjs";
-import {render} from "./utils/render";
+import {render, RenderPosition} from "./utils/render";
+import {isEscapeEvent} from "./utils/dom-events";
 
-import {createTripInfoTemplate} from "./view/trip-info";
-import {tripControlsTemplate} from "./view/trip-controls";
-import {newEventButtonTemplate} from "./view/new-event-button";
-import {tripSortTemplate} from "./view/trip-sort";
-import {tripEventsListTemplate} from "./view/trip-events-list";
-import {tripEventsItemTemplate} from "./view/trip-events-item";
-import {formEditTemplate} from "./view/form-edit";
-import {tripEventTemplate} from "./view/trip-event";
+// view
+import TripInfoView from "./view/trip-info";
+import TripControlsView from "./view/trip-controls";
+import NewButtonView from "./view/new-event-button";
+import SortView from "./view/trip-sort";
+import TripEventListView from "./view/trip-events-list";
+import TripEventsItemView from "./view/trip-events-item";
+import FormEditView from "./view/form-edit";
+import TripEventView from "./view/trip-event";
+import ListEmptyView from "./view/list-empty";
 
 import {generateTripPoint} from "./mock/trip-point";
 
@@ -22,23 +25,74 @@ const pageBody = document.querySelector(`.page-body`);
 const tripMain = pageBody.querySelector(`.trip-main`);
 const tripEvents = pageBody.querySelector(`.trip-events`);
 
-render(tripMain, createTripInfoTemplate(), `afterbegin`);
-render(tripMain, tripControlsTemplate());
-render(tripMain, newEventButtonTemplate());
+render(tripMain, new TripInfoView().getElement(), RenderPosition.AFTERBEGIN);
 
-render(tripEvents, tripSortTemplate());
-render(tripEvents, tripEventsListTemplate());
+render(tripMain, new TripControlsView().getElement());
+render(tripMain, new NewButtonView().getElement());
 
-const tripEventsList = tripEvents.querySelector(`.trip-events__list`);
+const renderTripPoint = (container, tripPoint) => {
+  const tripPointComponent = new TripEventView(tripPoint);
+  const formEditComponent = new FormEditView(tripPoint);
 
-let tripEventsItem = ``;
+  const replaceTripPointToFormEdit = () => {
+    container.replaceChild(formEditComponent.getElement(), tripPointComponent.getElement());
+  };
 
-render(tripEventsList, tripEventsItemTemplate());
-tripEventsItem = tripEvents.querySelector(`.trip-events__item`);
-render(tripEventsItem, formEditTemplate(tripPoints[0]));
+  const replaceFormEditToTripPoint = () => {
+    container.replaceChild(tripPointComponent.getElement(), formEditComponent.getElement());
+  };
 
-for (let i = 1; i < EVENT_COUNT; i++) {
-  render(tripEventsList, tripEventsItemTemplate());
-  tripEventsItem = tripEvents.querySelector(`.trip-events__item:last-child`);
-  render(tripEventsItem, tripEventTemplate(tripPoints[i]));
+  const hideFormEdit = () => {
+    replaceFormEditToTripPoint();
+    document.removeEventListener(`keydown`, onEscKeyDown);
+  };
+
+  const onEscKeyDown = (evt) => {
+    if (isEscapeEvent(evt)) {
+      evt.preventDefault();
+      hideFormEdit();
+    }
+  };
+
+  tripPointComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+    replaceTripPointToFormEdit();
+    document.addEventListener(`keydown`, onEscKeyDown);
+  });
+
+  formEditComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, hideFormEdit);
+
+  formEditComponent.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, hideFormEdit);
+
+  formEditComponent.getElement().addEventListener(`submit`, (evt) => {
+    evt.preventDefault();
+    hideFormEdit();
+  });
+
+  render(container, tripPointComponent.getElement());
+};
+
+const renderTripPointList = () => {
+  render(tripEvents, new SortView().getElement());
+  render(tripEvents, new TripEventListView().getElement());
+
+  const tripEventsList = tripEvents.querySelector(`.trip-events__list`);
+
+  let tripEventsItem = ``;
+
+  render(tripEventsList, new TripEventsItemView().getElement());
+  tripEventsItem = tripEvents.querySelector(`.trip-events__item`);
+
+  for (let i = 0; i < EVENT_COUNT; i++) {
+    render(tripEventsList, new TripEventsItemView().getElement());
+
+    tripEventsItem = tripEvents.querySelector(`.trip-events__item:last-child`);
+
+    renderTripPoint(tripEventsItem, tripPoints[i]);
+  }
+};
+
+if (tripPoints.length === 0) {
+  render(tripEvents, new ListEmptyView().getElement());
+} else {
+  renderTripPointList();
 }

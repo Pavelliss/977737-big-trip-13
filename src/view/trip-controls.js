@@ -1,4 +1,12 @@
-import {controlElementTemplate} from "./control-element";
+import {createElement} from "../utils/render";
+import {makeСapitalizedLetter} from "../utils/util";
+
+const controlElementTemplate = (title, isChecked) => {
+  return `<div class="trip-filters__filter">
+    <input id="filter-${title}" class="trip-filters__filter-input  visually-hidden" type="radio" name="trip-filter" value="${title}" ${isChecked ? `checked` : ``}>
+    <label class="trip-filters__filter-label" for="filter-${title}">${makeСapitalizedLetter(title)}</label>
+  </div>`;
+};
 
 const tripControlsTemplate = () => {
   return `<div class="trip-main__trip-controls  trip-controls">
@@ -18,4 +26,26 @@ const tripControlsTemplate = () => {
   </div>`;
 };
 
-export {tripControlsTemplate};
+class TripControls {
+  constructor() {
+    this._element = null;
+  }
+
+  getTemplate() {
+    return tripControlsTemplate();
+  }
+
+  getElement() {
+    if (!this._element) {
+      this._element = createElement(this.getTemplate());
+    }
+
+    return this._element;
+  }
+
+  removeElement() {
+    this._element = null;
+  }
+}
+
+export default TripControls;
