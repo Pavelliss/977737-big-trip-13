@@ -1,10 +1,10 @@
 import dayjs from "dayjs";
 import {nanoid} from "nanoid";
 
-import {tripEventOffersTemplate} from "./trip-event-offers";
-import {tripEventDestination} from "./trip-event-destination";
+import AbstractView from "./adstract";
+
 import {makeСapitalizedLetter} from "../utils/util";
-import {createElement} from "../utils/render";
+import {getRandomInteger} from "../mock/util";
 import {routeTypes} from "../const";
 
 const BLANK_NEW_EVENT = {
@@ -21,6 +21,7 @@ const BLANK_NEW_EVENT = {
   isFavorite: false,
   destination: null,
 };
+const MAX_OFFERS_COUNT = 5;
 
 const createDestinationOptionTemplate = (options) => {
   if (options === null) {
@@ -39,6 +40,52 @@ const createTripEventTypeTemplate = (id, routeType) => {
     <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-${id}">${makeСapitalizedLetter(type)}</label>
   </div>`;
   }).join(``);
+};
+
+const createDestinationPhotoTemplate = (photos) => {
+  return photos.map((photo) => {
+    return `<img class="event__photo" src="${photo}" alt="Event photo">`;
+  }).join(``);
+};
+
+const tripEventDestination = (destination) => {
+  return `<section class="event__section  event__section--destination">
+    <h3 class="event__section-title  event__section-title--destination">Destination</h3>
+    <p class="event__destination-description">${destination.description}</p>
+
+    <div class="event__photos-container">
+      <div class="event__photos-tape">
+        ${createDestinationPhotoTemplate(destination.photos)}
+      </div>
+    </div>
+  </section>`;
+};
+
+const createOfferTemplate = (id, offers) => {
+  const sortOffers = offers.sort((a, b) => b.isChecked - a.isChecked);
+  const offersCount = getRandomInteger(0, MAX_OFFERS_COUNT);
+
+
+  return sortOffers.slice(0, offersCount).map((offer) => {
+    return `<div class="event__offer-selector">
+    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.name}-${id}" type="checkbox" name="event-offer-${offer.name}" ${offer.isChecked ? `checked` : ``}>
+    <label class="event__offer-label" for="event-offer-${offer.name}-${id}">
+      <span class="event__offer-title">${offer.name}</span>
+      &plus;&euro;&nbsp;
+      <span class="event__offer-price">${offer.price}</span>
+    </label>
+  </div>`;
+  }).join(``);
+};
+
+const tripEventOffersTemplate = (id, offers) => {
+  return `<section class="event__section  event__section--offers">
+    <h3 class="event__section-title  event__section-title--offers">Offers</h3>
+
+    <div class="event__available-offers">
+      ${createOfferTemplate(id, offers)}
+    </div>
+  </section>`;
 };
 
 const formEditTemplate = (tripPoint, isEdit = true) => {
@@ -106,26 +153,47 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
   </form>`;
 };
 
-class FormEdit {
+class FormEdit extends AbstractView {
   constructor(tripPoint = BLANK_NEW_EVENT) {
+    super();
+
     this._tripPoint = tripPoint;
-    this._element = null;
+
+    this._formSubmitHandler = this._formSubmitHandler.bind(this);
+    this._formButtonClick = this._formButtonClick.bind(this);
+    this._formResetHandler = this._formResetHandler.bind(this);
   }
 
   getTemplate() {
     return formEditTemplate(this._tripPoint);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  _formSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit();
   }
 
-  removeElement() {
-    this._element = null;
+  _formButtonClick() {
+    this._callback.formButtonClick();
+  }
+
+  _formResetHandler() {
+    this._callback.formReset();
+  }
+
+  setFormSubmitHandler(callback) {
+    this._callback.formSubmit = callback;
+    this.getElement().addEventListener(`submit`, this._formSubmitHandler);
+  }
+
+  setFormButtonClickHandler(callback) {
+    this._callback.formButtonClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._formButtonClick);
+  }
+
+  setFormResetHandler(callback) {
+    this._callback.formReset = callback;
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formResetHandler);
   }
 }
 

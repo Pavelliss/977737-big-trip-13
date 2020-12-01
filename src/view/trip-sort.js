@@ -1,4 +1,4 @@
-import {createElement} from "../utils/render";
+import AbstractView from "./adstract";
 import {makeСapitalizedLetter} from "../utils/util";
 
 const sortElementTemplate = (type, isChecked = false) => {
@@ -18,25 +18,9 @@ const tripSortTemplate = () => {
   </form>`;
 };
 
-class Sort {
-  constructor() {
-    this._element = null;
-  }
-
+class Sort extends AbstractView {
   getTemplate() {
     return tripSortTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 
