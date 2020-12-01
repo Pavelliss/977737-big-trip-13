@@ -1,4 +1,4 @@
-import {createElement} from "../utils/render";
+import AbstractView from "./adstract";
 import {makeСapitalizedLetter} from "../utils/util";
 
 const controlElementTemplate = (title, isChecked) => {
@@ -26,25 +26,9 @@ const tripControlsTemplate = () => {
   </div>`;
 };
 
-class TripControls {
-  constructor() {
-    this._element = null;
-  }
-
+class TripControls extends AbstractView {
   getTemplate() {
     return tripControlsTemplate();
-  }
-
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
-  }
-
-  removeElement() {
-    this._element = null;
   }
 }
 

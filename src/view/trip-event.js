@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
+import AbstractView from "./adstract";
 import {TimeMS} from "../const";
-import {createElement} from "../utils/render";
 
 const MAX_LENGTH_OFFER = 17;
 
@@ -89,26 +89,25 @@ const tripEventTemplate = (tripPoint) => {
   </div>`;
 };
 
-class TripEvent {
+class TripEvent extends AbstractView {
   constructor(tripPoint) {
+    super();
     this._tripPoint = tripPoint;
-    this._element = null;
+
+    this._buttonClickHandler = this._buttonClickHandler.bind(this);
   }
 
   getTemplate() {
     return tripEventTemplate(this._tripPoint);
   }
 
-  getElement() {
-    if (!this._element) {
-      this._element = createElement(this.getTemplate());
-    }
-
-    return this._element;
+  _buttonClickHandler() {
+    this._callback.buttonClick();
   }
 
-  removeElement() {
-    this._element = null;
+  setButtonClickHandler(callback) {
+    this._callback.buttonClick = callback;
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._buttonClickHandler);
   }
 }
 

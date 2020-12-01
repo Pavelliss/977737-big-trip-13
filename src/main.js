@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import {render, RenderPosition} from "./utils/render";
+import {render, RenderPosition, replace} from "./utils/render";
 import {isEscapeEvent} from "./utils/dom-events";
 
 // view
@@ -35,11 +35,11 @@ const renderTripPoint = (container, tripPoint) => {
   const formEditComponent = new FormEditView(tripPoint);
 
   const replaceTripPointToFormEdit = () => {
-    container.replaceChild(formEditComponent.getElement(), tripPointComponent.getElement());
+    replace(formEditComponent, tripPointComponent);
   };
 
   const replaceFormEditToTripPoint = () => {
-    container.replaceChild(tripPointComponent.getElement(), formEditComponent.getElement());
+    replace(tripPointComponent, formEditComponent);
   };
 
   const hideFormEdit = () => {
@@ -54,17 +54,16 @@ const renderTripPoint = (container, tripPoint) => {
     }
   };
 
-  tripPointComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, () => {
+  tripPointComponent.setButtonClickHandler(() => {
     replaceTripPointToFormEdit();
     document.addEventListener(`keydown`, onEscKeyDown);
   });
 
-  formEditComponent.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, hideFormEdit);
+  formEditComponent.setFormButtonClickHandler(hideFormEdit);
 
-  formEditComponent.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, hideFormEdit);
+  formEditComponent.setFormResetHandler(hideFormEdit);
 
-  formEditComponent.getElement().addEventListener(`submit`, (evt) => {
-    evt.preventDefault();
+  formEditComponent.setFormSubmitHandler(() => {
     hideFormEdit();
   });
 
