@@ -10,6 +10,10 @@ const render = (container, child, place = RenderPosition.BEFOREEND) => {
     container = container.getElement();
   }
 
+  if (child instanceof AbstractView) {
+    child = child.getElement();
+  }
+
   switch (place) {
     case RenderPosition.AFTERBEGIN:
       container.prepend(child);
