@@ -19,8 +19,23 @@ const tripSortTemplate = () => {
 };
 
 class Sort extends AbstractView {
+  constructor() {
+    super();
+
+    this._sortTypeChangeHandler = this._sortTypeChangeHandler.bind(this);
+  }
+
   getTemplate() {
     return tripSortTemplate();
+  }
+
+  setSortTypeChangeHandler(callback) {
+    this._callback.sortTypeChange = callback;
+    this.getElement().addEventListener(`change`, this._sortTypeChangeHandler);
+  }
+
+  _sortTypeChangeHandler(evt) {
+    this._callback.sortTypeChange(evt.target.value);
   }
 }
 

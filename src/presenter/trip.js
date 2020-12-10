@@ -1,5 +1,6 @@
 import {render, RenderPosition} from "../utils/render";
-import {updateItem} from "../utils/util";
+import {updateItem, sortPointPrice, sortPointTime} from "../utils/util";
+import {SortType} from "../const";
 
 // view
 import SortView from "../view/trip-sort";
@@ -13,19 +14,21 @@ import PointPresenter from "../presenter/point";
 class Trip {
   constructor(container) {
     this._container = container;
+    this._currentSortType = SortType.DAY;
 
     this._sortComponent = new SortView();
     this._tripEventsListComponent = new TripEventListView();
     this._listEmptyComponent = new ListEmptyView();
-
     this._tripEventsItemComponent = null;
 
     this._handlePointChange = this._handlePointChange.bind(this);
     this._handleModeChange = this._handleModeChange.bind(this);
+    this._handleSortChange = this._handleSortChange.bind(this);
   }
 
   init(tripPoints) {
     this._tripPoints = tripPoints.slice();
+    this._sourceTripPoints = tripPoints.slice();
     this._pointPresenter = new Map();
 
     this._renderSort();
@@ -50,8 +53,36 @@ class Trip {
 
   }
 
+  _handleSortChange(sortType) {
+    sortType = sortType.slice(5).toUpperCase();
+
+    if (this._currentSortType === sortType) {
+      return;
+    }
+
+    this._sortPoints(sortType);
+    this._clearTripEventList();
+    this._renderTripEventList(this._tripPoints);
+  }
+
+  _sortPoints(sortType) {
+    switch (sortType) {
+      case SortType.PRICE:
+        this._tripPoints.sort(sortPointPrice);
+        break;
+      case SortType.TIME:
+        this._tripPoints.sort(sortPointTime);
+        break;
+      default:
+        this._tripPoints = this._sourceTripPoints.slice();
+    }
+
+    this._currentSortType = sortType;
+  }
+
   _renderSort() {
     render(this._container, this._sortComponent);
+    this._sortComponent.setSortTypeChangeHandler(this._handleSortChange);
   }
 
   _renderTripPoint(tripPoint) {
@@ -65,10 +96,9 @@ class Trip {
     this._pointPresenter.set(tripPoint[`id`], pointPresenter);
   }
 
-  _renderTripEventList(tripPoints) {
+  _renderTripEventList() {
     render(this._container, this._tripEventsListComponent);
-
-    tripPoints.forEach((tripPoint) => {
+    this._tripPoints.forEach((tripPoint) => {
       this._tripEventsItemComponent = new TripEventsItemView();
 
       render(
@@ -82,6 +112,9 @@ class Trip {
   }
 
   _clearTripEventList() {
+    for (let presenter of this._pointPresenter.values()) {
+      presenter.destroy();
+    }
     this._pointPresenter.clear();
   }
 }

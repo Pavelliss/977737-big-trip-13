@@ -63,7 +63,7 @@ class Point {
   }
 
   destroy() {
-    remove(this.__tripPointComponent);
+    remove(this._tripPointComponent);
     remove(this._formEditComponent);
   }
 
