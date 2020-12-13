@@ -1,7 +1,7 @@
 import dayjs from "dayjs";
 import {nanoid} from "nanoid";
 
-import AbstractView from "./adstract";
+import SmartView from "./smart";
 
 import {makeСapitalizedLetter} from "../utils/util";
 import {getRandomInteger} from "../mock/util";
@@ -128,10 +128,10 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
 
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-${id}">From</label>
-        <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dayjs(time.start).format(`DD/MM/YYYY HH:mm `)}">
+        <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dayjs(time.start).format(`DD/MM/YY HH:mm `)}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-${id}">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dayjs(time.start).format(`DD/MM/YYYY HH:mm `)}">
+        <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dayjs(time.start).format(`DD/MM/YY HH:mm `)}">
       </div>
 
       <div class="event__field-group  event__field-group--price">
@@ -139,7 +139,7 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-${id}" type="text" name="event-price" value="${price}">
+        <input class="event__input  event__input--price" id="event-price-${id}" type="text" name="event-price" value="${price}" readonly>
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
@@ -155,47 +155,84 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
   </form>`;
 };
 
-class FormEdit extends AbstractView {
-  constructor(tripPoint = BLANK_NEW_EVENT) {
+class FormEdit extends SmartView {
+  constructor(data = BLANK_NEW_EVENT) {
     super();
 
-    this._tripPoint = tripPoint;
+    this._data = data;
 
-    this._formSubmitHandler = this._formSubmitHandler.bind(this);
-    this._formButtonClick = this._formButtonClick.bind(this);
-    this._formResetHandler = this._formResetHandler.bind(this);
+    this._onFormSubmitHandler = this._onFormSubmitHandler.bind(this);
+    this._onFormButtonClick = this._onFormButtonClick.bind(this);
+    this._onFormReset = this._onFormReset.bind(this);
+    this._onInputRadioClick = this._onInputRadioClick.bind(this);
+
+    this._setInnerHandlers();
   }
 
   getTemplate() {
-    return formEditTemplate(this._tripPoint);
+    return formEditTemplate(this._data);
   }
 
-  _formSubmitHandler(evt) {
-    evt.preventDefault();
-    this._callback.formSubmit();
-  }
-
-  _formButtonClick() {
-    this._callback.formButtonClick();
-  }
-
-  _formResetHandler() {
-    this._callback.formReset();
+  reset(tripPoint) {
+    this.updateData(
+        FormEdit.parseTripPointToData(tripPoint)
+    );
   }
 
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
-    this.getElement().addEventListener(`submit`, this._formSubmitHandler);
+    this.getElement().addEventListener(`submit`, this._onFormSubmitHandler);
   }
 
   setFormButtonClickHandler(callback) {
     this._callback.formButtonClick = callback;
-    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._formButtonClick);
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._onFormButtonClick);
   }
 
   setFormResetHandler(callback) {
     this._callback.formReset = callback;
-    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formResetHandler);
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._onFormReset);
+  }
+
+  restoreHandlers() {
+    this._setInnerHandlers();
+    this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setFormButtonClickHandler(this._callback.formButtonClick);
+    this.setFormResetHandler(this._callback.formReset);
+  }
+
+  _setInnerHandlers() {
+    this.getElement()
+      .querySelectorAll(`input[type=radio]`)
+      .forEach((radio) => radio.addEventListener(`click`, this._onInputRadioClick));
+  }
+
+  _onFormSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit(this._data);
+  }
+
+  _onFormButtonClick() {
+    this._callback.formButtonClick();
+  }
+
+  _onFormReset() {
+    this._callback.formReset();
+  }
+
+  _onInputRadioClick(evt) {
+    this.updateData({
+      routeType: evt.target.value
+    });
+  }
+
+  static parseDataToTripPoint(data) {
+    data = Object.assign({}, data);
+    return data;
+  }
+
+  static parseTripPointToData(tripPoint) {
+    return Object.assign({}, tripPoint);
   }
 }
 

@@ -92,6 +92,7 @@ class Point {
   _onEscKeyDown(evt) {
     if (isEscapeEvent(evt)) {
       evt.preventDefault();
+      this._formEditComponent.reset(this._tripPoint);
       this._hideFormEdit();
     }
   }
@@ -102,6 +103,7 @@ class Point {
   }
 
   _onButtonCloseFormClick() {
+    this._formEditComponent.reset(this._tripPoint);
     this._hideFormEdit();
   }
 
@@ -111,6 +113,7 @@ class Point {
   }
 
   _onFormReset() {
+    this._formEditComponent.reset(this._tripPoint);
     this._hideFormEdit();
   }
 
