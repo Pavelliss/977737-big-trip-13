@@ -18,6 +18,107 @@ const DESCRIPTIONS = [
   `Nunc fermentum tortor ac porta dapibus. In rutrum ac purus sit amet tempus.`
 ];
 
+const OFFERS = [
+  {
+    id: nanoid(),
+    name: `Rent a car`,
+    price: 200,
+    isChecked: !getRandomInteger(0, 1)
+  },
+  {
+    id: nanoid(),
+    name: `Add breakfast`,
+    price: 50,
+    isChecked: !getRandomInteger(0, 1)
+  },
+  {
+    id: nanoid(),
+    name: `Book tickets`,
+    price: 40,
+    isChecked: !getRandomInteger(0, 1)
+  },
+  {
+    id: nanoid(),
+    name: `Lunch in city`,
+    price: 30,
+    isChecked: !getRandomInteger(0, 1)
+  },
+  {
+    id: nanoid(),
+    name: `Add luggage`,
+    price: 30,
+    isChecked: !getRandomInteger(0, 1)
+  },
+  {
+    id: nanoid(),
+    name: `Switch to comfort class`,
+    price: 100,
+    isChecked: !getRandomInteger(0, 1)
+  },
+  {
+    id: nanoid(),
+    name: `Add meal`,
+    price: 15,
+    isChecked: !getRandomInteger(0, 1)
+  },
+  {
+    id: nanoid(),
+    name: `Choose seats`,
+    price: 5,
+    isChecked: !getRandomInteger(0, 1)
+  },
+  {
+    id: nanoid(),
+    name: `Travel by train`,
+    price: 50,
+    isChecked: !getRandomInteger(0, 1)
+  },
+];
+
+const generateDestination = () => {
+  const destinationMap = new Map();
+  let photoCity = null;
+  let descriptionCity = null;
+
+  CITIES.forEach((cityDestination, index) => {
+    const isPhotos = !getRandomInteger(0, 1);
+    const isDescription = !getRandomInteger(0, 1);
+
+    if (isPhotos) {
+      photoCity = [
+        `http://picsum.photos/248/152?r=${Math.random()}`,
+        `http://picsum.photos/248/152?r=${Math.random()}`,
+        `http://picsum.photos/248/152?r=${Math.random()}`
+      ];
+    }
+
+    if (isDescription) {
+      descriptionCity = DESCRIPTIONS[index];
+    }
+
+    destinationMap.set(
+        cityDestination, {
+          city: cityDestination,
+          destination: {
+            photos: photoCity,
+            description: descriptionCity,
+          },
+        });
+  });
+
+  return destinationMap;
+};
+
+const generateOfferEventType = () => {
+  const eventTypesMap = new Map();
+
+  routeTypes.forEach((routeType, index) => {
+    eventTypesMap.set(routeType, OFFERS.slice(index - 1));
+  });
+
+  return eventTypesMap;
+};
+
 const generateDestinationOptionList = () => {
   const countOptions = 3;
 
@@ -43,53 +144,7 @@ const generateTripPoint = () => {
     city: getRandomListElement(CITIES),
     time: generateDate(),
     price: getRandomInteger(5, 100),
-    offers: [
-      {
-        name: `Rent a car`,
-        price: 200,
-        isChecked: !getRandomInteger(0, 1)
-      },
-      {
-        name: `Add breakfast`,
-        price: 50,
-        isChecked: !getRandomInteger(0, 1)
-      },
-      {
-        name: `Book tickets`,
-        price: 40,
-        isChecked: !getRandomInteger(0, 1)
-      },
-      {
-        name: `Lunch in city`,
-        price: 30,
-        isChecked: !getRandomInteger(0, 1)
-      },
-      {
-        name: `Add luggage`,
-        price: 30,
-        isChecked: !getRandomInteger(0, 1)
-      },
-      {
-        name: `Switch to comfort class`,
-        price: 100,
-        isChecked: !getRandomInteger(0, 1)
-      },
-      {
-        name: `Add meal`,
-        price: 15,
-        isChecked: !getRandomInteger(0, 1)
-      },
-      {
-        name: `Choose seats`,
-        price: 5,
-        isChecked: !getRandomInteger(0, 1)
-      },
-      {
-        name: `Travel by train`,
-        price: 50,
-        isChecked: !getRandomInteger(0, 1)
-      },
-    ],
+    offers: OFFERS,
     isFavorite: !getRandomInteger(0, 1),
     destinationOptions: generateDestinationOptionList(),
     destination: {
@@ -103,5 +158,10 @@ const generateTripPoint = () => {
   };
 };
 
-export {generateTripPoint};
+export {
+  CITIES,
+  generateTripPoint,
+  generateOfferEventType,
+  generateDestination
+};
 

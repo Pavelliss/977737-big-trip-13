@@ -3,9 +3,14 @@ import {nanoid} from "nanoid";
 
 import SmartView from "./smart";
 
-import {makeСapitalizedLetter} from "../utils/util";
-import {getRandomInteger} from "../mock/util";
 import {routeTypes} from "../const";
+import {makeСapitalizedLetter, updateItem} from "../utils/util";
+import {
+  CITIES,
+  generateOfferEventType,
+  generateDestination
+} from "../mock/trip-point";
+
 
 const BLANK_NEW_EVENT = {
   id: nanoid(),
@@ -21,7 +26,10 @@ const BLANK_NEW_EVENT = {
   isFavorite: false,
   destination: null,
 };
-const MAX_OFFERS_COUNT = 5;
+const MAX_OFFERS_COUNT = 4;
+
+const eventTypesMap = generateOfferEventType();
+const destinationsMap = generateDestination();
 
 const createDestinationOptionTemplate = (options) => {
   if (options === null) {
@@ -30,7 +38,7 @@ const createDestinationOptionTemplate = (options) => {
 
   return options.map((option) => {
     return `<option value="${option}"></option>`;
-  });
+  }).join(``);
 };
 
 const createTripEventTypeTemplate = (id, routeType) => {
@@ -43,6 +51,10 @@ const createTripEventTypeTemplate = (id, routeType) => {
 };
 
 const createDestinationPhotoTemplate = (photos) => {
+  if (photos === null) {
+    return ``;
+  }
+
   return photos.map((photo) => {
     return `<img class="event__photo" src="${photo}" alt="Event photo">`;
   }).join(``);
@@ -52,7 +64,6 @@ const tripEventDestination = (destination) => {
   return `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
     <p class="event__destination-description">${destination.description}</p>
-
     <div class="event__photos-container">
       <div class="event__photos-tape">
         ${createDestinationPhotoTemplate(destination.photos)}
@@ -61,15 +72,15 @@ const tripEventDestination = (destination) => {
   </section>`;
 };
 
-const createOfferTemplate = (id, offers) => {
+const createOfferTemplate = (offers) => {
   const sortOffers = offers.sort((a, b) => b.isChecked - a.isChecked);
-  const offersCount = getRandomInteger(0, MAX_OFFERS_COUNT);
+  const offersCount = MAX_OFFERS_COUNT;
 
 
   return sortOffers.slice(0, offersCount).map((offer) => {
     return `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.name}-${id}" type="checkbox" name="event-offer-${offer.name}" ${offer.isChecked ? `checked` : ``}>
-    <label class="event__offer-label" for="event-offer-${offer.name}-${id}">
+    <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-${offer.name}" ${offer.isChecked ? `checked` : ``}>
+    <label class="event__offer-label" for="${offer.id}">
       <span class="event__offer-title">${offer.name}</span>
       &plus;&euro;&nbsp;
       <span class="event__offer-price">${offer.price}</span>
@@ -78,12 +89,12 @@ const createOfferTemplate = (id, offers) => {
   }).join(``);
 };
 
-const tripEventOffersTemplate = (id, offers) => {
+const tripEventOffersTemplate = (offers) => {
   return `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
     <div class="event__available-offers">
-      ${createOfferTemplate(id, offers)}
+      ${createOfferTemplate(offers)}
     </div>
   </section>`;
 };
@@ -99,7 +110,7 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
     price,
     offers
   } = tripPoint;
-  return `<form class="event event--edit" action="#" method="post">
+  return `<form class="event event--edit" action="#" method="post" autocomplete="off" >
     <header class="event__header">
       <div class="event__type-wrapper">
         <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
@@ -118,9 +129,9 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
 
       <div class="event__field-group  event__field-group--destination">
         <label class="event__label  event__type-output" for="event-destination-${id}">
-          ${makeСapitalizedLetter(routeType)} ${city}
+          ${makeСapitalizedLetter(routeType)}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="" list="destination-list-${id}">
+        <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${city}" list="destination-list-${id}" required>
         <datalist id="destination-list-${id}">
           ${createDestinationOptionTemplate(destinationOptions)}
         </datalist>
@@ -149,7 +160,7 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
       </button>
     </header>
     <section class="event__details">
-      ${offers !== null ? tripEventOffersTemplate(id, offers) : ``}
+      ${offers !== null ? tripEventOffersTemplate(offers) : ``}
       ${destination !== null ? tripEventDestination(destination) : ``}
     </section>
   </form>`;
@@ -165,6 +176,9 @@ class FormEdit extends SmartView {
     this._onFormButtonClick = this._onFormButtonClick.bind(this);
     this._onFormReset = this._onFormReset.bind(this);
     this._onInputRadioClick = this._onInputRadioClick.bind(this);
+    this._onInputDestinationFocus = this._onInputDestinationFocus.bind(this);
+    this._onInputDestinationBlur = this._onInputDestinationBlur.bind(this);
+    this._onOfferCheckboxClick = this._onOfferCheckboxClick.bind(this);
 
     this._setInnerHandlers();
   }
@@ -205,6 +219,20 @@ class FormEdit extends SmartView {
     this.getElement()
       .querySelectorAll(`input[type=radio]`)
       .forEach((radio) => radio.addEventListener(`click`, this._onInputRadioClick));
+
+    this.getElement()
+      .querySelector(`.event__input--destination`)
+      .addEventListener(`focus`, this._onInputDestinationFocus);
+
+    this.getElement()
+    .querySelector(`.event__input--destination`)
+    .addEventListener(`blur`, this._onInputDestinationBlur);
+
+    this.getElement()
+      .querySelectorAll(`.event__offer-checkbox`)
+      .forEach((offer) => {
+        offer.addEventListener(`click`, this._onOfferCheckboxClick);
+      });
   }
 
   _onFormSubmitHandler(evt) {
@@ -222,7 +250,43 @@ class FormEdit extends SmartView {
 
   _onInputRadioClick(evt) {
     this.updateData({
-      routeType: evt.target.value
+      routeType: evt.target.value,
+      offers: eventTypesMap.get(evt.target.value),
+    });
+  }
+
+  _onInputDestinationFocus(evt) {
+    evt.target.value = ``;
+  }
+
+  _onInputDestinationBlur(evt) {
+    const value = makeСapitalizedLetter(evt.target.value);
+    const isValid = CITIES.some((city) => city === value);
+
+    if (!isValid) {
+      evt.target.value = ``;
+      evt.target.focus();
+      return;
+    }
+
+    this.updateData(destinationsMap.get(value));
+  }
+
+  _onOfferCheckboxClick(evt) {
+    const offers = this._data.offers.slice();
+    const inputId = evt.target.id;
+    let inputOffer = offers.find((offer) => offer.id === inputId);
+
+    inputOffer = Object.assign(
+        {},
+        inputOffer,
+        {
+          isChecked: !inputOffer.isChecked
+        }
+    );
+
+    this.updateData({
+      offers: updateItem(offers, inputOffer)
     });
   }
 
