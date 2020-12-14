@@ -6,8 +6,15 @@ const TimeMS = {
   minute: 60000,
 };
 
+const SortType = {
+  DAY: `DAY`,
+  TIME: `TIME`,
+  PRICE: `PRICE`,
+};
+
 
 export {
   routeTypes,
-  TimeMS
+  TimeMS,
+  SortType,
 };
