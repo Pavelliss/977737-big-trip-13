@@ -287,7 +287,7 @@ class FormEdit extends SmartView {
 
     this.updateData({
       offers: updateItem(offers, inputOffer)
-    });
+    }, true);
   }
 
   static parseDataToTripPoint(data) {
