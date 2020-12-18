@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import he from "he";
 import {nanoid} from "nanoid";
 
 import SmartView from "./smart";
@@ -20,8 +21,8 @@ const BLANK_NEW_EVENT = {
     start: dayjs(),
     end: dayjs()
   },
-  price: ``,
-  destinationOptions: null,
+  price: 100,
+  destinationOptions: [`Stockholm`, `Munich`, `Vienna`],
   offers: null,
   isFavorite: false,
   destination: null,
@@ -99,7 +100,7 @@ const tripEventOffersTemplate = (offers) => {
   </section>`;
 };
 
-const formEditTemplate = (tripPoint, isEdit = true) => {
+const formEditTemplate = (tripPoint, isEdit = false) => {
   const {
     id,
     routeType,
@@ -131,7 +132,7 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
         <label class="event__label  event__type-output" for="event-destination-${id}">
           ${makeСapitalizedLetter(routeType)}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${city}" list="destination-list-${id}" required>
+        <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${he.encode(city)}" list="destination-list-${id}" required>
         <datalist id="destination-list-${id}">
           ${createDestinationOptionTemplate(destinationOptions)}
         </datalist>
@@ -150,14 +151,15 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-${id}" type="text" name="event-price" value="${price}" readonly>
+        <input class="event__input  event__input--price" id="event-price-${id}" type="number" name="event-price" value="${price}">
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
       <button class="event__reset-btn" type="reset">${isEdit ? `Delete` : `Cancel`}</button>
-      <button class="event__rollup-btn" type="button">
+      ${isEdit ? `<button class="event__rollup-btn" type="button">
       <span class="visually-hidden">Open event</span>
-      </button>
+      </button>` : ``}
+
     </header>
     <section class="event__details">
       ${offers !== null ? tripEventOffersTemplate(offers) : ``}
@@ -174,7 +176,7 @@ class FormEdit extends SmartView {
 
     this._onFormSubmitHandler = this._onFormSubmitHandler.bind(this);
     this._onFormButtonClick = this._onFormButtonClick.bind(this);
-    this._onFormReset = this._onFormReset.bind(this);
+    this._onFormDeleteClick = this._onFormDeleteClick.bind(this);
     this._onInputRadioClick = this._onInputRadioClick.bind(this);
     this._onInputDestinationFocus = this._onInputDestinationFocus.bind(this);
     this._onInputDestinationBlur = this._onInputDestinationBlur.bind(this);
@@ -184,7 +186,7 @@ class FormEdit extends SmartView {
   }
 
   getTemplate() {
-    return formEditTemplate(this._data);
+    return formEditTemplate(this._data, true);
   }
 
   reset(tripPoint) {
@@ -203,16 +205,16 @@ class FormEdit extends SmartView {
     this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._onFormButtonClick);
   }
 
-  setFormResetHandler(callback) {
+  setFormDeleteHandler(callback) {
     this._callback.formReset = callback;
-    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._onFormReset);
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._onFormDeleteClick);
   }
 
   restoreHandlers() {
     this._setInnerHandlers();
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setFormButtonClickHandler(this._callback.formButtonClick);
-    this.setFormResetHandler(this._callback.formReset);
+    this.setFormDeleteHandler(this._callback.formReset);
   }
 
   _setInnerHandlers() {
@@ -244,8 +246,8 @@ class FormEdit extends SmartView {
     this._callback.formButtonClick();
   }
 
-  _onFormReset() {
-    this._callback.formReset();
+  _onFormDeleteClick() {
+    this._callback.formReset(this._data);
   }
 
   _onInputRadioClick(evt) {

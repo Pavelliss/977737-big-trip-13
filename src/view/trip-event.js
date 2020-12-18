@@ -34,6 +34,10 @@ const trimsText = (text) => {
 };
 
 const createAddtionalOptions = (offers) => {
+  if (offers === null) {
+    return ``;
+  }
+
   return offers
   .filter((option) => option.isChecked)
   .slice(0, 2)

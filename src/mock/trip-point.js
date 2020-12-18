@@ -130,8 +130,9 @@ const generateDestinationOptionList = () => {
 const generateDate = () => {
   const maxHoursGap = 72;
   const hoursGap = getRandomInteger(1, maxHoursGap);
+  const startTime = getRandomInteger(maxHoursGap, -maxHoursGap);
 
-  const start = dayjs().add(hoursGap, `hour`).toDate();
+  const start = dayjs().add(startTime, `hour`).toDate();
   const end = dayjs(start).add(hoursGap, `hour`).toDate();
 
   return {start, end};
