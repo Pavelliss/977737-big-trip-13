@@ -1,5 +1,6 @@
 import {render, replace, remove} from "../utils/render";
 import {isEscapeEvent} from "../utils/dom-events";
+import {UserAction, UpdateType} from "../const";
 
 import TripEventView from "../view/trip-event";
 import FormEditView from "../view/form-edit";
@@ -24,7 +25,7 @@ class Point {
     this._onButtonOpenFormClick = this._onButtonOpenFormClick.bind(this);
     this._onButtonCloseFormClick = this._onButtonCloseFormClick.bind(this);
     this._onFormSubmit = this._onFormSubmit.bind(this);
-    this._onFormReset = this._onFormReset.bind(this);
+    this._onFormDeleteClick = this._onFormDeleteClick.bind(this);
     this._onFavoriteClick = this._onFavoriteClick.bind(this);
   }
 
@@ -42,7 +43,7 @@ class Point {
 
     this._formEditComponent.setFormButtonClickHandler(this._onButtonCloseFormClick);
     this._formEditComponent.setFormSubmitHandler(this._onFormSubmit);
-    this._formEditComponent.setFormResetHandler(this._onFormReset);
+    this._formEditComponent.setFormDeleteHandler(this._onFormDeleteClick);
 
     if (prevTripPointComponent === null
        || prevFormEditComponent === null) {
@@ -92,6 +93,7 @@ class Point {
   _onEscKeyDown(evt) {
     if (isEscapeEvent(evt)) {
       evt.preventDefault();
+      this._formEditComponent.reset(this._tripPoint);
       this._hideFormEdit();
     }
   }
@@ -102,20 +104,31 @@ class Point {
   }
 
   _onButtonCloseFormClick() {
+    this._formEditComponent.reset(this._tripPoint);
     this._hideFormEdit();
   }
 
   _onFormSubmit(point) {
     this._hideFormEdit();
-    this._changeData(point);
+    this._changeData(
+        UserAction.UPDATE_POINT,
+        UpdateType.PATCH,
+        point
+    );
   }
 
-  _onFormReset() {
-    this._hideFormEdit();
+  _onFormDeleteClick(point) {
+    this._changeData(
+        UserAction.DELETE_POINT,
+        UpdateType.MINOR,
+        point
+    );
   }
 
   _onFavoriteClick() {
     this._changeData(
+        UserAction.UPDATE_POINT,
+        UpdateType.PATCH,
         Object.assign(
             {},
             this._tripPoint,

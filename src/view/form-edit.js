@@ -1,11 +1,17 @@
 import dayjs from "dayjs";
+import he from "he";
 import {nanoid} from "nanoid";
 
-import AbstractView from "./adstract";
+import SmartView from "./smart";
 
-import {makeСapitalizedLetter} from "../utils/util";
-import {getRandomInteger} from "../mock/util";
 import {routeTypes} from "../const";
+import {makeСapitalizedLetter, updateItem} from "../utils/util";
+import {
+  CITIES,
+  generateOfferEventType,
+  generateDestination
+} from "../mock/trip-point";
+
 
 const BLANK_NEW_EVENT = {
   id: nanoid(),
@@ -15,13 +21,16 @@ const BLANK_NEW_EVENT = {
     start: dayjs(),
     end: dayjs()
   },
-  price: ``,
-  destinationOptions: null,
+  price: 100,
+  destinationOptions: [`Stockholm`, `Munich`, `Vienna`],
   offers: null,
   isFavorite: false,
   destination: null,
 };
-const MAX_OFFERS_COUNT = 5;
+const MAX_OFFERS_COUNT = 4;
+
+const eventTypesMap = generateOfferEventType();
+const destinationsMap = generateDestination();
 
 const createDestinationOptionTemplate = (options) => {
   if (options === null) {
@@ -30,7 +39,7 @@ const createDestinationOptionTemplate = (options) => {
 
   return options.map((option) => {
     return `<option value="${option}"></option>`;
-  });
+  }).join(``);
 };
 
 const createTripEventTypeTemplate = (id, routeType) => {
@@ -43,6 +52,10 @@ const createTripEventTypeTemplate = (id, routeType) => {
 };
 
 const createDestinationPhotoTemplate = (photos) => {
+  if (photos === null) {
+    return ``;
+  }
+
   return photos.map((photo) => {
     return `<img class="event__photo" src="${photo}" alt="Event photo">`;
   }).join(``);
@@ -52,7 +65,6 @@ const tripEventDestination = (destination) => {
   return `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
     <p class="event__destination-description">${destination.description}</p>
-
     <div class="event__photos-container">
       <div class="event__photos-tape">
         ${createDestinationPhotoTemplate(destination.photos)}
@@ -61,15 +73,15 @@ const tripEventDestination = (destination) => {
   </section>`;
 };
 
-const createOfferTemplate = (id, offers) => {
+const createOfferTemplate = (offers) => {
   const sortOffers = offers.sort((a, b) => b.isChecked - a.isChecked);
-  const offersCount = getRandomInteger(0, MAX_OFFERS_COUNT);
+  const offersCount = MAX_OFFERS_COUNT;
 
 
   return sortOffers.slice(0, offersCount).map((offer) => {
     return `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="event-offer-${offer.name}-${id}" type="checkbox" name="event-offer-${offer.name}" ${offer.isChecked ? `checked` : ``}>
-    <label class="event__offer-label" for="event-offer-${offer.name}-${id}">
+    <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-${offer.name}" ${offer.isChecked ? `checked` : ``}>
+    <label class="event__offer-label" for="${offer.id}">
       <span class="event__offer-title">${offer.name}</span>
       &plus;&euro;&nbsp;
       <span class="event__offer-price">${offer.price}</span>
@@ -78,17 +90,17 @@ const createOfferTemplate = (id, offers) => {
   }).join(``);
 };
 
-const tripEventOffersTemplate = (id, offers) => {
+const tripEventOffersTemplate = (offers) => {
   return `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
     <div class="event__available-offers">
-      ${createOfferTemplate(id, offers)}
+      ${createOfferTemplate(offers)}
     </div>
   </section>`;
 };
 
-const formEditTemplate = (tripPoint, isEdit = true) => {
+const formEditTemplate = (tripPoint, isEdit = false) => {
   const {
     id,
     routeType,
@@ -99,7 +111,7 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
     price,
     offers
   } = tripPoint;
-  return `<form class="event event--edit" action="#" method="post">
+  return `<form class="event event--edit" action="#" method="post" autocomplete="off" >
     <header class="event__header">
       <div class="event__type-wrapper">
         <label class="event__type  event__type-btn" for="event-type-toggle-${id}">
@@ -118,9 +130,9 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
 
       <div class="event__field-group  event__field-group--destination">
         <label class="event__label  event__type-output" for="event-destination-${id}">
-          ${makeСapitalizedLetter(routeType)} ${city}
+          ${makeСapitalizedLetter(routeType)}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="" list="destination-list-${id}">
+        <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${he.encode(city)}" list="destination-list-${id}" required>
         <datalist id="destination-list-${id}">
           ${createDestinationOptionTemplate(destinationOptions)}
         </datalist>
@@ -128,10 +140,10 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
 
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-${id}">From</label>
-        <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dayjs(time.start).format(`DD/MM/YYYY HH:mm `)}">
+        <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dayjs(time.start).format(`DD/MM/YY HH:mm `)}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-${id}">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dayjs(time.start).format(`DD/MM/YYYY HH:mm `)}">
+        <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dayjs(time.start).format(`DD/MM/YY HH:mm `)}">
       </div>
 
       <div class="event__field-group  event__field-group--price">
@@ -139,63 +151,154 @@ const formEditTemplate = (tripPoint, isEdit = true) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-${id}" type="text" name="event-price" value="${price}">
+        <input class="event__input  event__input--price" id="event-price-${id}" type="number" name="event-price" value="${price}">
       </div>
 
       <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
       <button class="event__reset-btn" type="reset">${isEdit ? `Delete` : `Cancel`}</button>
-      <button class="event__rollup-btn" type="button">
+      ${isEdit ? `<button class="event__rollup-btn" type="button">
       <span class="visually-hidden">Open event</span>
-      </button>
+      </button>` : ``}
+
     </header>
     <section class="event__details">
-      ${offers !== null ? tripEventOffersTemplate(id, offers) : ``}
+      ${offers !== null ? tripEventOffersTemplate(offers) : ``}
       ${destination !== null ? tripEventDestination(destination) : ``}
     </section>
   </form>`;
 };
 
-class FormEdit extends AbstractView {
-  constructor(tripPoint = BLANK_NEW_EVENT) {
+class FormEdit extends SmartView {
+  constructor(data = BLANK_NEW_EVENT) {
     super();
 
-    this._tripPoint = tripPoint;
+    this._data = data;
 
-    this._formSubmitHandler = this._formSubmitHandler.bind(this);
-    this._formButtonClick = this._formButtonClick.bind(this);
-    this._formResetHandler = this._formResetHandler.bind(this);
+    this._onFormSubmitHandler = this._onFormSubmitHandler.bind(this);
+    this._onFormButtonClick = this._onFormButtonClick.bind(this);
+    this._onFormDeleteClick = this._onFormDeleteClick.bind(this);
+    this._onInputRadioClick = this._onInputRadioClick.bind(this);
+    this._onInputDestinationFocus = this._onInputDestinationFocus.bind(this);
+    this._onInputDestinationBlur = this._onInputDestinationBlur.bind(this);
+    this._onOfferCheckboxClick = this._onOfferCheckboxClick.bind(this);
+
+    this._setInnerHandlers();
   }
 
   getTemplate() {
-    return formEditTemplate(this._tripPoint);
+    return formEditTemplate(this._data, true);
   }
 
-  _formSubmitHandler(evt) {
-    evt.preventDefault();
-    this._callback.formSubmit();
-  }
-
-  _formButtonClick() {
-    this._callback.formButtonClick();
-  }
-
-  _formResetHandler() {
-    this._callback.formReset();
+  reset(tripPoint) {
+    this.updateData(
+        FormEdit.parseTripPointToData(tripPoint)
+    );
   }
 
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
-    this.getElement().addEventListener(`submit`, this._formSubmitHandler);
+    this.getElement().addEventListener(`submit`, this._onFormSubmitHandler);
   }
 
   setFormButtonClickHandler(callback) {
     this._callback.formButtonClick = callback;
-    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._formButtonClick);
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._onFormButtonClick);
   }
 
-  setFormResetHandler(callback) {
+  setFormDeleteHandler(callback) {
     this._callback.formReset = callback;
-    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._formResetHandler);
+    this.getElement().querySelector(`.event__reset-btn`).addEventListener(`click`, this._onFormDeleteClick);
+  }
+
+  restoreHandlers() {
+    this._setInnerHandlers();
+    this.setFormSubmitHandler(this._callback.formSubmit);
+    this.setFormButtonClickHandler(this._callback.formButtonClick);
+    this.setFormDeleteHandler(this._callback.formReset);
+  }
+
+  _setInnerHandlers() {
+    this.getElement()
+      .querySelectorAll(`input[type=radio]`)
+      .forEach((radio) => radio.addEventListener(`click`, this._onInputRadioClick));
+
+    this.getElement()
+      .querySelector(`.event__input--destination`)
+      .addEventListener(`focus`, this._onInputDestinationFocus);
+
+    this.getElement()
+    .querySelector(`.event__input--destination`)
+    .addEventListener(`blur`, this._onInputDestinationBlur);
+
+    this.getElement()
+      .querySelectorAll(`.event__offer-checkbox`)
+      .forEach((offer) => {
+        offer.addEventListener(`click`, this._onOfferCheckboxClick);
+      });
+  }
+
+  _onFormSubmitHandler(evt) {
+    evt.preventDefault();
+    this._callback.formSubmit(this._data);
+  }
+
+  _onFormButtonClick() {
+    this._callback.formButtonClick();
+  }
+
+  _onFormDeleteClick() {
+    this._callback.formReset(this._data);
+  }
+
+  _onInputRadioClick(evt) {
+    this.updateData({
+      routeType: evt.target.value,
+      offers: eventTypesMap.get(evt.target.value),
+    });
+  }
+
+  _onInputDestinationFocus(evt) {
+    evt.target.value = ``;
+  }
+
+  _onInputDestinationBlur(evt) {
+    const value = makeСapitalizedLetter(evt.target.value);
+    const isValid = CITIES.some((city) => city === value);
+
+    if (!isValid) {
+      evt.target.value = ``;
+      evt.target.focus();
+      return;
+    }
+
+    this.updateData(destinationsMap.get(value));
+  }
+
+  _onOfferCheckboxClick(evt) {
+    const offers = this._data.offers.slice();
+    const inputId = evt.target.id;
+    let inputOffer = offers.find((offer) => offer.id === inputId);
+
+    inputOffer = Object.assign(
+        {},
+        inputOffer,
+        {
+          isChecked: !inputOffer.isChecked
+        }
+    );
+
+    this.updateData({
+      offers: updateItem(offers, inputOffer)
+    }, true);
+  }
+
+  static parseDataToTripPoint(data) {
+    data = Object.assign({}, data);
+    return data;
+  }
+
+  static parseTripPointToData(tripPoint) {
+    return Object.assign({}, tripPoint);
   }
 }
 

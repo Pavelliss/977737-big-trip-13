@@ -1,6 +1,9 @@
 import dayjs from "dayjs";
 
 const makeСapitalizedLetter = (word) => {
+  if (word === ``) {
+    return ``;
+  }
   return word[0].toUpperCase() + word.substring(1);
 };
 
@@ -18,6 +21,8 @@ const updateItem = (items, update) => {
   ];
 };
 
+const sortPointDay = (a, b) => (dayjs(a.time.start).isAfter(dayjs(b.time.start)) ? -1 : 1);
+
 const sortPointPrice = (pointA, pointB) => pointA.price - pointB.price;
 
 const sortPointTime = (pointA, pointB) => {
@@ -30,6 +35,7 @@ const sortPointTime = (pointA, pointB) => {
 export {
   makeСapitalizedLetter,
   updateItem,
+  sortPointDay,
   sortPointPrice,
   sortPointTime,
 };
