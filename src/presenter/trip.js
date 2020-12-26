@@ -13,6 +13,7 @@ import SortView from "../view/trip-sort";
 import TripEventListView from "../view/trip-events-list";
 import ListEmptyView from "../view/list-empty";
 import TripEventsItemView from "../view/trip-events-item";
+import LoadingView from "../view/loading";
 
 // presenter
 import PointPresenter from "./point";
@@ -23,12 +24,18 @@ class Trip {
       container,
       pointsModel,
       filterModel,
-      newButtonComponent) {
+      newButtonComponent,
+      api,
+      serverData) {
 
     this._container = container;
     this._pointsModel = pointsModel;
     this._filterModel = filterModel;
+    this._serverData = serverData;
+    this._api = api;
+
     this._currentSortType = SortType.DAY;
+    this._isLoading = true;
 
     this._sortComponent = null;
     this._newPointComponent = null;
@@ -36,6 +43,7 @@ class Trip {
     this._newButtonComponent = newButtonComponent;
     this._listEmptyComponent = new ListEmptyView();
     this._tripEventsListComponent = new TripEventListView();
+    this._loadingComponent = new LoadingView();
 
     this._handleViewAction = this._handleViewAction.bind(this);
     this._handleModeEvent = this._handleModeEvent.bind(this);
@@ -58,7 +66,8 @@ class Trip {
     this._newPointComponent = new NewPointPresenter(
         this._tripEventsListComponent,
         this._handleViewAction,
-        this._newButtonComponent
+        this._newButtonComponent,
+        this._serverData
     );
 
     this._newPointComponent.init();
@@ -84,7 +93,9 @@ class Trip {
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        this._pointsModel.updatePoint(updateType, update);
+        this._api.updatePoint(update).then((response) => {
+          this._pointsModel.updatePoint(updateType, response);
+        });
         break;
       case UserAction.ADD_POINT:
         this._pointsModel.addPoint(updateType, update);
@@ -106,6 +117,11 @@ class Trip {
         break;
       case UpdateType.MAJOR:
         this._clearTripEventList({resetSortType: true});
+        this._renderTripEventList();
+        break;
+      case UpdateType.INIT:
+        this._isLoading = false;
+        remove(this._loadingComponent);
         this._renderTripEventList();
         break;
     }
@@ -144,7 +160,8 @@ class Trip {
     const pointPresenter = new PointPresenter(
         this._tripEventsItemComponent,
         this._handleViewAction,
-        this._handleModeChange
+        this._handleModeChange,
+        this._serverData
     );
 
     pointPresenter.init(tripPoint);
@@ -152,6 +169,11 @@ class Trip {
   }
 
   _renderTripEventList() {
+    if (this._isLoading) {
+      this._renderLoading();
+      return;
+    }
+
     const points = this._getPoinsts();
 
     if (points.length === 0) {
@@ -174,6 +196,10 @@ class Trip {
 
       this._renderTripPoint(tripPoint);
     });
+  }
+
+  _renderLoading() {
+    render(this._container, this._loadingComponent);
   }
 
   _clearTripEventList({resetSortType = false} = {}) {

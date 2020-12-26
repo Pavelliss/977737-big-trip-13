@@ -1,6 +1,7 @@
-import dayjs from "dayjs";
+import {END_POINT, AUTHORIZATION, UpdateType} from "./const";
 import {render, RenderPosition} from "./utils/render";
-import {generateTripPoint} from "./mock/trip-point";
+
+import Api from "./api";
 
 // model
 import PointsModel from "./model/points";
@@ -16,14 +17,45 @@ import FilterTitleView from "./view/filter-title";
 import TripPresenter from "./presenter/trip";
 import FilterPresenter from "./presenter/filter";
 
-const EVENT_COUNT = 9;
+const api = new Api(END_POINT, AUTHORIZATION);
 
-const sortTripPoins = (a, b) => (dayjs(a.time.start).isAfter(dayjs(b.time.start)) ? -1 : 1);
+const dataLoad = {
+  isPointsLoaded: false,
+  isOffersLoaded: false,
+  isDestinationsLoaded: false,
+};
 
-const tripPoints = new Array(EVENT_COUNT).fill().map(generateTripPoint).sort(sortTripPoins);
+const serverData = {
+  pointsData: [],
+  offersData: [],
+  destinationsData: [],
+};
+
+const initTripList = () => {
+  pointsModel.setPoints(UpdateType.INIT, serverData.pointsData);
+};
+
+const renderComponents = () => {
+  render(tripMain, tripControlsComponent);
+  render(tripControlsComponent, new FilterTitleView());
+  filterPresenter.init();
+  render(tripMain, newButtonComponent);
+};
+
+const checkDataLoading = () => {
+  if (
+    !dataLoad.isPointsLoaded ||
+    !dataLoad.isOffersLoaded ||
+    !dataLoad.isDestinationsLoaded
+  ) {
+    return;
+  }
+
+  renderComponents();
+  initTripList();
+};
 
 const pointsModel = new PointsModel();
-pointsModel.setPoints(tripPoints);
 const filterModel = new FilterModel();
 
 const pageBody = document.querySelector(`.page-body`);
@@ -33,21 +65,43 @@ const tripEvents = pageBody.querySelector(`.trip-events`);
 render(tripMain, new TripInfoView(), RenderPosition.AFTERBEGIN);
 
 const tripControlsComponent = new TripControlsView();
-
-render(tripMain, tripControlsComponent);
-render(tripControlsComponent, new FilterTitleView());
-
 const filterPresenter = new FilterPresenter(tripControlsComponent, filterModel);
-filterPresenter.init();
-
 const newButtonComponent = new NewButtonView();
-render(tripMain, newButtonComponent);
 
-const tripComponent = new TripPresenter(tripEvents, pointsModel, filterModel, newButtonComponent);
+const tripComponent = new TripPresenter(
+    tripEvents,
+    pointsModel,
+    filterModel,
+    newButtonComponent,
+    api,
+    serverData
+);
 
 tripComponent.init();
 
 newButtonComponent.getElement().addEventListener(`click`, () => {
   tripComponent.createNewPoint();
   newButtonComponent.getElement().setAttribute(`disabled`, `disabled`);
+});
+
+api.getPoints()
+  .then((points) => {
+    dataLoad.isPointsLoaded = true;
+    serverData.pointsData = points;
+    checkDataLoading();
+  })
+  .catch(() => {
+    pointsModel.setPoints(UpdateType.INIT, serverData.pointsData);
+  });
+
+api.getOffers().then((offers) => {
+  dataLoad.isOffersLoaded = true;
+  serverData.offersData = offers;
+  checkDataLoading();
+});
+
+api.getDestinations().then((destinations) => {
+  dataLoad.isDestinationsLoaded = true;
+  serverData.destinationsData = destinations;
+  checkDataLoading();
 });

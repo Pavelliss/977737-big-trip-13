@@ -1,3 +1,6 @@
+const END_POINT = `https://13.ecmascript.pages.academy/big-trip`;
+const AUTHORIZATION = `Basic Speaking_in_Tongues [SPiT]`;
+
 const routeTypes = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`];
 
 const TimeMS = {
@@ -22,6 +25,7 @@ const UpdateType = {
   PATCH: `PATCH`,
   MINOR: `MINOR`,
   MAJOR: `MAJOR`,
+  INIT: `INIT`,
 };
 
 const FilterType = {
@@ -32,6 +36,8 @@ const FilterType = {
 
 
 export {
+  END_POINT,
+  AUTHORIZATION,
   routeTypes,
   TimeMS,
   SortType,

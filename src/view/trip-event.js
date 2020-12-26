@@ -2,7 +2,7 @@ import dayjs from "dayjs";
 import AbstractView from "./adstract";
 import {TimeMS} from "../const";
 
-const MAX_LENGTH_OFFER = 17;
+const MAX_LENGTH_OFFER = 15;
 
 const addZero = (value) => String(value).padStart(2, `0`);
 
@@ -34,18 +34,13 @@ const trimsText = (text) => {
 };
 
 const createAddtionalOptions = (offers) => {
-  if (offers === null) {
-    return ``;
-  }
-
   return offers
-  .filter((option) => option.isChecked)
   .slice(0, 2)
-  .map((option) =>
+  .map((offer) =>
     `<li class="event__offer">
-      <span class="event__offer-title">${trimsText(option.name)}</span>
+      <span class="event__offer-title">${trimsText(offer.title)}</span>
       &plus;
-      &euro;&nbsp;<span class="event__offer-price">${option.price}</span>
+      &euro;&nbsp;<span class="event__offer-price">${offer.price}</span>
     </li>`
   ).join(``);
 };
@@ -78,7 +73,7 @@ const tripEventTemplate = (tripPoint) => {
     </p>
     <h4 class="visually-hidden">Offers:</h4>
     <ul class="event__selected-offers">
-      ${createAddtionalOptions(offers)}
+      ${offers.length === 0 ? `` : createAddtionalOptions(offers)}
     </ul>
     <button class="event__favorite-btn
     ${isFavorite ? `event__favorite-btn--active` : ``}" type="button">

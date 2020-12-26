@@ -7,9 +7,15 @@ import FormEditView from "../view/form-edit";
 import TripEventsItemView from "../view/trip-events-item";
 
 class NewPoint {
-  constructor(container, changeData, newButtonComponent) {
+  constructor(
+      container,
+      changeData,
+      newButtonComponent,
+      serverData) {
+
     this._container = container;
     this._changeData = changeData;
+    this._serverData = serverData;
 
     this._newButtonComponent = newButtonComponent;
     this._tripEventsItemComponent = null;
@@ -26,7 +32,7 @@ class NewPoint {
     }
 
     this._tripEventsItemComponent = new TripEventsItemView();
-    this._formEditComponent = new FormEditView();
+    this._formEditComponent = new FormEditView(this._serverData);
     this._formEditComponent.setFormSubmitHandler(this._onFormSubmit);
     this._formEditComponent.setFormDeleteHandler(this._onFormCancelClick);
 
@@ -50,6 +56,9 @@ class NewPoint {
     }
 
     remove(this._formEditComponent);
+    remove(this._tripEventsItemComponent);
+
+    this._tripEventsItemComponent = null;
     this._formEditComponent = null;
 
     document.removeEventListener(`keydown`, this._onEscKeyDown);
