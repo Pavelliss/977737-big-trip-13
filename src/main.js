@@ -1,4 +1,5 @@
 import {END_POINT, AUTHORIZATION, UpdateType} from "./const";
+import {getMapOffers} from "./utils/util";
 import {render, RenderPosition} from "./utils/render";
 
 import Api from "./api";
@@ -50,6 +51,7 @@ const checkDataLoading = () => {
   ) {
     return;
   }
+  serverData.mapOffers = getMapOffers(serverData.offersData);
 
   renderComponents();
   initTripList();

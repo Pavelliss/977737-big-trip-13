@@ -5,7 +5,7 @@ import {nanoid} from "nanoid";
 import SmartView from "./smart";
 
 import {routeTypes} from "../const";
-import {makeСapitalizedLetter, getMapOffers} from "../utils/util";
+import {makeСapitalizedLetter, getSetOffersTitle} from "../utils/util";
 
 const BLANK_NEW_EVENT = {
   routeType: `flight`,
@@ -47,7 +47,7 @@ const createTripEventTypeTemplate = (id, routeType) => {
 };
 
 const createDestinationPhotoTemplate = (photos) => {
-  if (photos === []) {
+  if (photos.length === 0) {
     return ``;
   }
 
@@ -76,7 +76,7 @@ const createOfferTemplate = (pointOffers, offersData, routeType) => {
     const isChecked = pointOffers.some((pointOffer) => pointOffer.title === offer.title);
 
     return `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="${id}" type="checkbox" name="event-offer-${offer.title}" ${isChecked ? `checked` : ``}>
+    <input class="event__offer-checkbox  visually-hidden" id="${id}" type="checkbox" name="event-offer-${offer.title}" ${isChecked ? `checked` : ``} data-title="${offer.title}">
     <label class="event__offer-label" for="${id}">
       <span class="event__offer-title">${offer.title}</span>
       &plus;&euro;&nbsp;
@@ -170,8 +170,10 @@ class FormEdit extends SmartView {
     super();
 
     this._data = data;
+    this._cities = null;
     this._serverData = serverData;
-    this._offersMap = getMapOffers(this._serverData.offersData);
+
+    this._offersNameSet = getSetOffersTitle(this._data.offers);
 
     this._onFormSubmitHandler = this._onFormSubmitHandler.bind(this);
     this._onFormButtonClick = this._onFormButtonClick.bind(this);
@@ -180,6 +182,7 @@ class FormEdit extends SmartView {
     this._onInputDestinationFocus = this._onInputDestinationFocus.bind(this);
     this._onInputDestinationBlur = this._onInputDestinationBlur.bind(this);
     this._onOfferCheckboxClick = this._onOfferCheckboxClick.bind(this);
+    this._onInputCityChange = this._onInputCityChange.bind(this);
 
     this._setInnerHandlers();
   }
@@ -236,6 +239,10 @@ class FormEdit extends SmartView {
       .forEach((offer) => {
         offer.addEventListener(`click`, this._onOfferCheckboxClick);
       });
+
+    this.getElement()
+      .querySelector(`.event__input--destination`)
+      .addEventListener(`change`, this._onInputCityChange);
   }
 
   _onFormSubmitHandler(evt) {
@@ -264,47 +271,50 @@ class FormEdit extends SmartView {
     evt.target.value = ``;
   }
 
+  _onInputCityChange(evt) {
+    if (this._cities === null) {
+      this._cities = getCities(this._serverData.destinationsData);
+    }
+
+    const value = makeСapitalizedLetter(evt.target.value);
+    const isValid = this._cities.some((city) => city === value);
+
+    if (isValid) {
+      const element = this._serverData.destinationsData.find((city) => city.name === value);
+
+      this.updateData({
+        city: element.name,
+        destination: {
+          photos: element.pictures,
+          description: element.description
+        }
+      });
+    }
+  }
+
   _onInputDestinationBlur(evt) {
     const value = makeСapitalizedLetter(evt.target.value);
-    const cities = getCities(this._serverData.destinationsData);
-
-    const isValid = cities.some((city) => city === value);
+    const isValid = this._cities.some((city) => city === value);
 
     if (!isValid) {
       evt.target.value = ``;
       evt.target.focus();
-      return;
     }
-
-    const element = this._serverData.destinationsData.find((city) => city.name === value);
-
-    this.updateData({
-      city: element.name,
-      destination: {
-        photos: element.pictures,
-        description: element.description
-      }
-    });
   }
 
   _onOfferCheckboxClick(evt) {
-    const offers = this._data.offers.slice();
+    const updateOffers = [];
+    const offerTitle = evt.target.dataset.title;
 
-    let updateOffers = [];
-    const offerName = evt.target.name.slice(12);
-    const offerIndex = offers.findIndex((offer) => offer.title === offerName);
-
-    if (offerIndex !== -1) {
-      updateOffers = [
-        ...offers.slice(0, offerIndex),
-        ...offers.slice(offerIndex + 1)
-      ];
+    if (this._offersNameSet.has(offerTitle)) {
+      this._offersNameSet.delete(offerTitle);
     } else {
-      updateOffers = [
-        this._offersMap.get(offerName),
-        ...offers
-      ];
+      this._offersNameSet.add(offerTitle);
     }
+
+    this._offersNameSet.forEach((offer) => {
+      updateOffers.push(this._serverData.mapOffers.get(offer));
+    });
 
     this.updateData({
       offers: updateOffers

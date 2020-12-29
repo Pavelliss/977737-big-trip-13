@@ -33,14 +33,24 @@ const sortPointTime = (pointA, pointB) => {
 };
 
 const getMapOffers = (offerTypes) => {
-  const map = new Map();
-  offerTypes.forEach((type) => {
-    type.offers.forEach((offer) => {
-      map.set(offer.title, offer);
+  const offersMap = offerTypes.reduce((mapOffers, type) => {
+    const offerData = type.offers.map((offer) => {
+      return [offer.title, offer];
     });
-  });
 
-  return map;
+    mapOffers.push(...offerData);
+
+    return mapOffers;
+  }, []);
+
+  return new Map(offersMap);
+};
+
+const getSetOffersTitle = (offers) => {
+  const set = new Set();
+  offers.forEach((offer) => set.add(offer.title));
+
+  return set;
 };
 
 export {
@@ -50,4 +60,5 @@ export {
   sortPointPrice,
   sortPointTime,
   getMapOffers,
+  getSetOffersTitle,
 };

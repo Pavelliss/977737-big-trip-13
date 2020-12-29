@@ -35,7 +35,6 @@ const trimsText = (text) => {
 
 const createAddtionalOptions = (offers) => {
   return offers
-  .slice(0, 2)
   .map((offer) =>
     `<li class="event__offer">
       <span class="event__offer-title">${trimsText(offer.title)}</span>
