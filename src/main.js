@@ -30,6 +30,7 @@ const serverData = {
   pointsData: [],
   offersData: [],
   destinationsData: [],
+  mapOffers: null,
 };
 
 const initTripList = () => {
