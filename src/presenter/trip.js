@@ -26,12 +26,15 @@ class Trip {
       filterModel,
       newButtonComponent,
       api,
-      serverData) {
+      serverData,
+      formattedData
+  ) {
 
     this._container = container;
     this._pointsModel = pointsModel;
     this._filterModel = filterModel;
     this._serverData = serverData;
+    this._formattedData = formattedData;
     this._api = api;
 
     this._currentSortType = SortType.DAY;
@@ -67,7 +70,8 @@ class Trip {
         this._tripEventsListComponent,
         this._handleViewAction,
         this._newButtonComponent,
-        this._serverData
+        this._serverData,
+        this._formattedData
     );
 
     this._newPointComponent.init();
@@ -161,7 +165,8 @@ class Trip {
         this._tripEventsItemComponent,
         this._handleViewAction,
         this._handleModeChange,
-        this._serverData
+        this._serverData,
+        this._formattedData
     );
 
     pointPresenter.init(tripPoint);

@@ -11,11 +11,18 @@ const Mode = {
 };
 
 class Point {
-  constructor(container, changeData, changeMode, serverData) {
+  constructor(
+      container,
+      changeData,
+      changeMode,
+      serverData,
+      formattedData
+  ) {
     this._container = container;
     this._changeData = changeData;
     this._changeMode = changeMode;
     this._serverData = serverData;
+    this._formattedData = formattedData;
     this._mode = Mode.DEFAULT;
 
     this._tripPointComponent = null;
@@ -37,7 +44,7 @@ class Point {
     const prevFormEditComponent = this._formEditComponent;
 
     this._tripPointComponent = new TripEventView(this._tripPoint);
-    this._formEditComponent = new FormEditView(this._serverData, this._tripPoint);
+    this._formEditComponent = new FormEditView(this._serverData, this._formattedData, this._tripPoint);
 
     this._tripPointComponent.setButtonClickHandler(this._onButtonOpenFormClick);
     this._tripPointComponent.setButtonFavoriteHandler(this._onFavoriteClick);

@@ -11,11 +11,14 @@ class NewPoint {
       container,
       changeData,
       newButtonComponent,
-      serverData) {
+      serverData,
+      formattedData
+  ) {
 
     this._container = container;
     this._changeData = changeData;
     this._serverData = serverData;
+    this._formattedData = formattedData;
 
     this._newButtonComponent = newButtonComponent;
     this._tripEventsItemComponent = null;
@@ -32,7 +35,7 @@ class NewPoint {
     }
 
     this._tripEventsItemComponent = new TripEventsItemView();
-    this._formEditComponent = new FormEditView(this._serverData);
+    this._formEditComponent = new FormEditView(this._serverData, this._formattedData);
     this._formEditComponent.setFormSubmitHandler(this._onFormSubmit);
     this._formEditComponent.setFormDeleteHandler(this._onFormCancelClick);
 

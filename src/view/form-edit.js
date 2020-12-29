@@ -166,12 +166,17 @@ const formEditTemplate = (tripPoint, serverData, isEdit) => {
 };
 
 class FormEdit extends SmartView {
-  constructor(serverData, data = BLANK_NEW_EVENT) {
+  constructor(
+      serverData,
+      formattedData,
+      data = BLANK_NEW_EVENT
+  ) {
     super();
 
     this._data = data;
     this._cities = null;
     this._serverData = serverData;
+    this._formattedData = formattedData;
 
     this._offersNameSet = getSetOffersTitle(this._data.offers);
 
@@ -313,7 +318,7 @@ class FormEdit extends SmartView {
     }
 
     this._offersNameSet.forEach((offer) => {
-      updateOffers.push(this._serverData.mapOffers.get(offer));
+      updateOffers.push(this._formattedData.mapOffers.get(offer));
     });
 
     this.updateData({

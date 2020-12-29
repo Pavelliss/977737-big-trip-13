@@ -29,8 +29,11 @@ const dataLoad = {
 const serverData = {
   pointsData: [],
   offersData: [],
-  destinationsData: [],
-  mapOffers: null,
+  destinationsData: []
+};
+
+const formattedData = {
+  mapOffers: null
 };
 
 const initTripList = () => {
@@ -52,7 +55,8 @@ const checkDataLoading = () => {
   ) {
     return;
   }
-  serverData.mapOffers = getMapOffers(serverData.offersData);
+
+  formattedData.mapOffers = getMapOffers(serverData.offersData);
 
   renderComponents();
   initTripList();
@@ -77,7 +81,8 @@ const tripComponent = new TripPresenter(
     filterModel,
     newButtonComponent,
     api,
-    serverData
+    serverData,
+    formattedData
 );
 
 tripComponent.init();
