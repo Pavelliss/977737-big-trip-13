@@ -70,7 +70,7 @@ class Point {
     }
 
     if (this._mode === Mode.EDITTING) {
-      replace(this._formEditComponent, prevFormEditComponent);
+      replace(this._tripPointComponent, prevFormEditComponent);
     }
 
     remove(prevTripPointComponent);

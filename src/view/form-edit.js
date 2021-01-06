@@ -211,10 +211,11 @@ class FormEdit extends SmartView {
     this._onInputCityChange = this._onInputCityChange.bind(this);
     this._onDateStartChange = this._onDateStartChange.bind(this);
     this._onDateEndChange = this._onDateEndChange.bind(this);
+    this._onInputPriceChange = this._onInputPriceChange.bind(this);
 
     this._setInnerHandlers();
-    // this._setDatepickerStart();
-    // this._setDatepickerEnd();
+    this._setDatepickerStart();
+    this._setDatepickerEnd();
   }
 
   getTemplate() {
@@ -234,7 +235,14 @@ class FormEdit extends SmartView {
 
   setFormButtonClickHandler(callback) {
     this._callback.formButtonClick = callback;
-    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._onFormButtonClick);
+
+    const buttonElement = this.getElement().querySelector(`.event__rollup-btn`);
+
+    if (!buttonElement) {
+      return;
+    }
+
+    buttonElement.addEventListener(`click`, this._onFormButtonClick);
   }
 
   setFormDeleteHandler(callback) {
@@ -247,8 +255,8 @@ class FormEdit extends SmartView {
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setFormButtonClickHandler(this._callback.formButtonClick);
     this.setFormDeleteHandler(this._callback.formReset);
-    // this._setDatepickerStart();
-    // this._setDatepickerEnd();
+    this._setDatepickerStart();
+    this._setDatepickerEnd();
   }
 
   _setInnerHandlers() {
@@ -273,6 +281,10 @@ class FormEdit extends SmartView {
     this.getElement()
       .querySelector(`.event__input--destination`)
       .addEventListener(`change`, this._onInputCityChange);
+
+    this.getElement()
+      .querySelector(`.event__input--price`)
+      .addEventListener(`change`, this._onInputPriceChange);
   }
 
   _setDatepickerStart() {
@@ -319,6 +331,8 @@ class FormEdit extends SmartView {
       routeType: evt.target.value,
       offers: element.offers,
     });
+
+    this._offersNameSet = getSetOffersTitle(this._data.offers);
   }
 
   _onInputDestinationFocus(evt) {
@@ -369,7 +383,7 @@ class FormEdit extends SmartView {
     this._offersNameSet.forEach((offer) => {
       updateOffers.push(this._formattedData.mapOffers.get(offer));
     });
-
+    console.log(updateOffers);
     this.updateData({
       offers: updateOffers
     }, true);
@@ -385,13 +399,18 @@ class FormEdit extends SmartView {
   }
 
   _onDateEndChange([userDate]) {
-
     this.updateData({
       time: {
         start: this._data.time.start,
-        end: dayjs(userDate)
+        end: dayjs(userDate).toDate()
       }
     });
+  }
+
+  _onInputPriceChange(evt) {
+    this.updateData({
+      price: evt.target.value
+    }, true);
   }
 
   static parseDataToTripPoint(data) {
