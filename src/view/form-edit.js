@@ -5,16 +5,9 @@ import {nanoid} from "nanoid";
 import SmartView from "./smart";
 
 import {routeTypes} from "../const";
-import {makeСapitalizedLetter, updateItem} from "../utils/util";
-import {
-  CITIES,
-  generateOfferEventType,
-  generateDestination
-} from "../mock/trip-point";
-
+import {makeСapitalizedLetter, getSetOffersTitle} from "../utils/util";
 
 const BLANK_NEW_EVENT = {
-  id: nanoid(),
   routeType: `flight`,
   city: ``,
   time: {
@@ -22,23 +15,25 @@ const BLANK_NEW_EVENT = {
     end: dayjs()
   },
   price: 100,
-  destinationOptions: [`Stockholm`, `Munich`, `Vienna`],
-  offers: null,
+  offers: [],
   isFavorite: false,
-  destination: null,
+  destination: {
+    description: ``,
+    photos: []
+  },
 };
-const MAX_OFFERS_COUNT = 4;
 
-const eventTypesMap = generateOfferEventType();
-const destinationsMap = generateDestination();
+const getCities = (destinationsData) => {
+  return destinationsData.map((destination) => {
+    return destination.name;
+  });
+};
 
-const createDestinationOptionTemplate = (options) => {
-  if (options === null) {
-    return ``;
-  }
+const createDestinationOptionTemplate = (destinations) => {
+  const cities = getCities(destinations);
 
-  return options.map((option) => {
-    return `<option value="${option}"></option>`;
+  return cities.map((city) => {
+    return `<option value="${city}"></option>`;
   }).join(``);
 };
 
@@ -52,17 +47,17 @@ const createTripEventTypeTemplate = (id, routeType) => {
 };
 
 const createDestinationPhotoTemplate = (photos) => {
-  if (photos === null) {
+  if (photos.length === 0) {
     return ``;
   }
 
   return photos.map((photo) => {
-    return `<img class="event__photo" src="${photo}" alt="Event photo">`;
+    return `<img class="event__photo" src="${photo.src}" alt="${photo.description}">`;
   }).join(``);
 };
 
 const tripEventDestination = (destination) => {
-  return `<section class="event__section  event__section--destination">
+  return destination.photos.length === 0 && destination.description === `` ? `` : `<section class="event__section  event__section--destination">
     <h3 class="event__section-title  event__section-title--destination">Destination</h3>
     <p class="event__destination-description">${destination.description}</p>
     <div class="event__photos-container">
@@ -73,16 +68,17 @@ const tripEventDestination = (destination) => {
   </section>`;
 };
 
-const createOfferTemplate = (offers) => {
-  const sortOffers = offers.sort((a, b) => b.isChecked - a.isChecked);
-  const offersCount = MAX_OFFERS_COUNT;
+const createOfferTemplate = (pointOffers, offersData, routeType) => {
+  const element = offersData.find((offer) => offer.type === routeType);
 
+  return element.offers.slice().map((offer) => {
+    const id = nanoid();
+    const isChecked = pointOffers.some((pointOffer) => pointOffer.title === offer.title);
 
-  return sortOffers.slice(0, offersCount).map((offer) => {
     return `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="${offer.id}" type="checkbox" name="event-offer-${offer.name}" ${offer.isChecked ? `checked` : ``}>
-    <label class="event__offer-label" for="${offer.id}">
-      <span class="event__offer-title">${offer.name}</span>
+    <input class="event__offer-checkbox  visually-hidden" id="${id}" type="checkbox" name="event-offer-${offer.title}" ${isChecked ? `checked` : ``} data-title="${offer.title}">
+    <label class="event__offer-label" for="${id}">
+      <span class="event__offer-title">${offer.title}</span>
       &plus;&euro;&nbsp;
       <span class="event__offer-price">${offer.price}</span>
     </label>
@@ -90,23 +86,24 @@ const createOfferTemplate = (offers) => {
   }).join(``);
 };
 
-const tripEventOffersTemplate = (offers) => {
-  return `<section class="event__section  event__section--offers">
+const tripEventOffersTemplate = (offers, offersData, routeType) => {
+  const isOffers = createOfferTemplate(offers, offersData, routeType);
+
+  return isOffers === `` ? `` : `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
     <div class="event__available-offers">
-      ${createOfferTemplate(offers)}
+      ${createOfferTemplate(offers, offersData, routeType)}
     </div>
   </section>`;
 };
 
-const formEditTemplate = (tripPoint, isEdit = false) => {
+const formEditTemplate = (tripPoint, serverData, isEdit) => {
   const {
     id,
     routeType,
     city,
     destination,
-    destinationOptions,
     time,
     price,
     offers
@@ -134,7 +131,7 @@ const formEditTemplate = (tripPoint, isEdit = false) => {
         </label>
         <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${he.encode(city)}" list="destination-list-${id}" required>
         <datalist id="destination-list-${id}">
-          ${createDestinationOptionTemplate(destinationOptions)}
+          ${createDestinationOptionTemplate(serverData.destinationsData)}
         </datalist>
       </div>
 
@@ -162,17 +159,26 @@ const formEditTemplate = (tripPoint, isEdit = false) => {
 
     </header>
     <section class="event__details">
-      ${offers !== null ? tripEventOffersTemplate(offers) : ``}
-      ${destination !== null ? tripEventDestination(destination) : ``}
+      ${tripEventOffersTemplate(offers, serverData.offersData, routeType)}
+      ${tripEventDestination(destination)}
     </section>
   </form>`;
 };
 
 class FormEdit extends SmartView {
-  constructor(data = BLANK_NEW_EVENT) {
+  constructor(
+      serverData,
+      formattedData,
+      data = BLANK_NEW_EVENT
+  ) {
     super();
 
     this._data = data;
+    this._cities = null;
+    this._serverData = serverData;
+    this._formattedData = formattedData;
+
+    this._offersNameSet = getSetOffersTitle(this._data.offers);
 
     this._onFormSubmitHandler = this._onFormSubmitHandler.bind(this);
     this._onFormButtonClick = this._onFormButtonClick.bind(this);
@@ -181,12 +187,15 @@ class FormEdit extends SmartView {
     this._onInputDestinationFocus = this._onInputDestinationFocus.bind(this);
     this._onInputDestinationBlur = this._onInputDestinationBlur.bind(this);
     this._onOfferCheckboxClick = this._onOfferCheckboxClick.bind(this);
+    this._onInputCityChange = this._onInputCityChange.bind(this);
 
     this._setInnerHandlers();
   }
 
   getTemplate() {
-    return formEditTemplate(this._data, true);
+    const isEditPoint = this._data !== BLANK_NEW_EVENT ? true : false;
+
+    return formEditTemplate(this._data, this._serverData, isEditPoint);
   }
 
   reset(tripPoint) {
@@ -235,6 +244,10 @@ class FormEdit extends SmartView {
       .forEach((offer) => {
         offer.addEventListener(`click`, this._onOfferCheckboxClick);
       });
+
+    this.getElement()
+      .querySelector(`.event__input--destination`)
+      .addEventListener(`change`, this._onInputCityChange);
   }
 
   _onFormSubmitHandler(evt) {
@@ -251,9 +264,11 @@ class FormEdit extends SmartView {
   }
 
   _onInputRadioClick(evt) {
+    const element = this._serverData.offersData.find((routeType) => routeType.type === evt.target.value);
+
     this.updateData({
       routeType: evt.target.value,
-      offers: eventTypesMap.get(evt.target.value),
+      offers: element.offers,
     });
   }
 
@@ -261,34 +276,53 @@ class FormEdit extends SmartView {
     evt.target.value = ``;
   }
 
+  _onInputCityChange(evt) {
+    if (this._cities === null) {
+      this._cities = getCities(this._serverData.destinationsData);
+    }
+
+    const value = makeСapitalizedLetter(evt.target.value);
+    const isValid = this._cities.some((city) => city === value);
+
+    if (isValid) {
+      const element = this._serverData.destinationsData.find((city) => city.name === value);
+
+      this.updateData({
+        city: element.name,
+        destination: {
+          photos: element.pictures,
+          description: element.description
+        }
+      });
+    }
+  }
+
   _onInputDestinationBlur(evt) {
     const value = makeСapitalizedLetter(evt.target.value);
-    const isValid = CITIES.some((city) => city === value);
+    const isValid = this._cities.some((city) => city === value);
 
     if (!isValid) {
       evt.target.value = ``;
       evt.target.focus();
-      return;
     }
-
-    this.updateData(destinationsMap.get(value));
   }
 
   _onOfferCheckboxClick(evt) {
-    const offers = this._data.offers.slice();
-    const inputId = evt.target.id;
-    let inputOffer = offers.find((offer) => offer.id === inputId);
+    const updateOffers = [];
+    const offerTitle = evt.target.dataset.title;
 
-    inputOffer = Object.assign(
-        {},
-        inputOffer,
-        {
-          isChecked: !inputOffer.isChecked
-        }
-    );
+    if (this._offersNameSet.has(offerTitle)) {
+      this._offersNameSet.delete(offerTitle);
+    } else {
+      this._offersNameSet.add(offerTitle);
+    }
+
+    this._offersNameSet.forEach((offer) => {
+      updateOffers.push(this._formattedData.mapOffers.get(offer));
+    });
 
     this.updateData({
-      offers: updateItem(offers, inputOffer)
+      offers: updateOffers
     }, true);
   }
 

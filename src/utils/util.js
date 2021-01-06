@@ -32,10 +32,33 @@ const sortPointTime = (pointA, pointB) => {
   return diffA - diffB;
 };
 
+const getMapOffers = (offerTypes) => {
+  const offersMap = offerTypes.reduce((mapOffers, type) => {
+    const offerData = type.offers.map((offer) => {
+      return [offer.title, offer];
+    });
+
+    mapOffers.push(...offerData);
+
+    return mapOffers;
+  }, []);
+
+  return new Map(offersMap);
+};
+
+const getSetOffersTitle = (offers) => {
+  const set = new Set();
+  offers.forEach((offer) => set.add(offer.title));
+
+  return set;
+};
+
 export {
   makeСapitalizedLetter,
   updateItem,
   sortPointDay,
   sortPointPrice,
   sortPointTime,
+  getMapOffers,
+  getSetOffersTitle,
 };

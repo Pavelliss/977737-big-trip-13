@@ -6,8 +6,9 @@ class Points extends Observer {
     this._points = [];
   }
 
-  setPoints(tripPoints) {
+  setPoints(updateType, tripPoints) {
     this._points = tripPoints;
+    this._notyfy(updateType);
   }
 
   getPoints() {
@@ -52,6 +53,65 @@ class Points extends Observer {
     ];
 
     this._notyfy(updateType, update);
+  }
+
+  static adaptToClient(point) {
+    const adaptedPoint = Object.assign(
+        {},
+        point,
+        {
+          routeType: point.type,
+          time: {
+            start: point.date_from !== null ? new Date(point.date_from) : point.date_from,
+            end: point.date_to !== null ? new Date(point.date_to) : point.date_to
+          },
+          destination: {
+            photos: point.destination.pictures,
+            description: point.destination.description
+          },
+          city: point.destination.name,
+          price: point.base_price,
+          isFavorite: point.is_favorite,
+        }
+    );
+
+    delete adaptedPoint.type;
+    delete adaptedPoint.date_from;
+    delete adaptedPoint.date_to;
+    delete adaptedPoint.destination.pictures;
+    delete adaptedPoint.destination.name;
+    delete adaptedPoint.base_price;
+    delete adaptedPoint.is_favorite;
+
+    return adaptedPoint;
+  }
+
+  static adaptToServer(point) {
+    const adaptedPoint = Object.assign(
+        {},
+        point,
+        {
+          "type": point.routeType,
+          "date_from": point.time.start instanceof Date ? point.time.start.toISOString() : null,
+          "date_to": point.time.end instanceof Date ? point.time.end.toISOString() : null,
+          "destination": {
+            "name": point.city,
+            "description": point.destination.description,
+            "pictures": point.destination.photos,
+          },
+          "base_price": point.price,
+          "is_favorite": point.isFavorite,
+        }
+    );
+
+    delete adaptedPoint.routeType;
+    delete adaptedPoint.time;
+    delete adaptedPoint.destination.photos;
+    delete adaptedPoint.city;
+    delete adaptedPoint.price;
+    delete adaptedPoint.isFavorite;
+
+    return adaptedPoint;
   }
 }
 
