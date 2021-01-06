@@ -7,6 +7,10 @@ import SmartView from "./smart";
 import {routeTypes} from "../const";
 import {makeСapitalizedLetter, getSetOffersTitle} from "../utils/util";
 
+import flatpickr from "flatpickr";
+
+import "../../node_modules/flatpickr/dist/flatpickr.min.css";
+
 const BLANK_NEW_EVENT = {
   routeType: `flight`,
   city: ``,
@@ -154,7 +158,7 @@ const formEditTemplate = (tripPoint, serverData, isEdit) => {
         <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dayjs(time.start).format(`DD/MM/YY HH:mm `)} ${isDisabled ? `disabled` : ``}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-${id}">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dayjs(time.start).format(`DD/MM/YY HH:mm `)} ${isDisabled ? `disabled` : ``}">
+        <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dayjs(time.end).format(`DD/MM/YY HH:mm `)} ${isDisabled ? `disabled` : ``}">
       </div>
 
       <div class="event__field-group  event__field-group--price">
@@ -190,6 +194,7 @@ class FormEdit extends SmartView {
 
     this._data = FormEdit.parseTripPointToData(data);
     this._cities = null;
+    this._datepicker = null;
     this._serverData = serverData;
     this._formattedData = formattedData;
 
@@ -204,8 +209,12 @@ class FormEdit extends SmartView {
     this._onInputDestinationBlur = this._onInputDestinationBlur.bind(this);
     this._onOfferCheckboxClick = this._onOfferCheckboxClick.bind(this);
     this._onInputCityChange = this._onInputCityChange.bind(this);
+    this._onDateStartChange = this._onDateStartChange.bind(this);
+    this._onDateEndChange = this._onDateEndChange.bind(this);
 
     this._setInnerHandlers();
+    // this._setDatepickerStart();
+    // this._setDatepickerEnd();
   }
 
   getTemplate() {
@@ -238,6 +247,8 @@ class FormEdit extends SmartView {
     this.setFormSubmitHandler(this._callback.formSubmit);
     this.setFormButtonClickHandler(this._callback.formButtonClick);
     this.setFormDeleteHandler(this._callback.formReset);
+    // this._setDatepickerStart();
+    // this._setDatepickerEnd();
   }
 
   _setInnerHandlers() {
@@ -262,6 +273,30 @@ class FormEdit extends SmartView {
     this.getElement()
       .querySelector(`.event__input--destination`)
       .addEventListener(`change`, this._onInputCityChange);
+  }
+
+  _setDatepickerStart() {
+    this._datepicker = flatpickr(
+        this.getElement().querySelector(`input[name=event-start-time]`),
+        {
+          dateFormat: `d/m/y H:i`,
+          minDate: `today`,
+          enableTime: true,
+          onChange: this._onDateStartChange
+        }
+    );
+  }
+
+  _setDatepickerEnd() {
+    this._datepicker = flatpickr(
+        this.getElement().querySelector(`input[name=event-end-time]`),
+        {
+          dateFormat: `d/m/y H:i`,
+          minDate: this._data.time.start,
+          enableTime: true,
+          onChange: this._onDateEndChange
+        }
+    );
   }
 
   _onFormSubmitHandler(evt) {
@@ -338,6 +373,25 @@ class FormEdit extends SmartView {
     this.updateData({
       offers: updateOffers
     }, true);
+  }
+
+  _onDateStartChange([userDate]) {
+    this.updateData({
+      time: {
+        start: dayjs(userDate).toDate(),
+        end: this._data.time.end
+      }
+    });
+  }
+
+  _onDateEndChange([userDate]) {
+
+    this.updateData({
+      time: {
+        start: this._data.time.start,
+        end: dayjs(userDate)
+      }
+    });
   }
 
   static parseDataToTripPoint(data) {

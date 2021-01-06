@@ -87,6 +87,7 @@ class Points extends Observer {
   }
 
   static adaptToServer(point) {
+    console.log(point)
     const adaptedPoint = Object.assign(
         {},
         point,
