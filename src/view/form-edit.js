@@ -72,7 +72,7 @@ const tripEventDestination = (destination) => {
   </section>`;
 };
 
-const createOfferTemplate = (pointOffers, offersData, routeType) => {
+const createOfferTemplate = (pointOffers, offersData, routeType, isDisabled) => {
   const element = offersData.find((offer) => offer.type === routeType);
 
   return element.offers.slice().map((offer) => {
@@ -80,7 +80,7 @@ const createOfferTemplate = (pointOffers, offersData, routeType) => {
     const isChecked = pointOffers.some((pointOffer) => pointOffer.title === offer.title);
 
     return `<div class="event__offer-selector">
-    <input class="event__offer-checkbox  visually-hidden" id="${id}" type="checkbox" name="event-offer-${offer.title}" ${isChecked ? `checked` : ``} data-title="${offer.title}">
+    <input class="event__offer-checkbox  visually-hidden" id="${id}" type="checkbox" name="event-offer-${offer.title}" ${isChecked ? `checked` : ``} data-title="${offer.title}" ${isDisabled ? `disabled` : ``}>
     <label class="event__offer-label" for="${id}">
       <span class="event__offer-title">${offer.title}</span>
       &plus;&euro;&nbsp;
@@ -90,14 +90,12 @@ const createOfferTemplate = (pointOffers, offersData, routeType) => {
   }).join(``);
 };
 
-const tripEventOffersTemplate = (offers, offersData, routeType) => {
-  const isOffers = createOfferTemplate(offers, offersData, routeType);
-
-  return isOffers === `` ? `` : `<section class="event__section  event__section--offers">
+const tripEventOffersTemplate = (offers, offersData, routeType, isDisabled) => {
+  return offers.length === 0 ? `` : `<section class="event__section  event__section--offers">
     <h3 class="event__section-title  event__section-title--offers">Offers</h3>
 
     <div class="event__available-offers">
-      ${createOfferTemplate(offers, offersData, routeType)}
+      ${createOfferTemplate(offers, offersData, routeType, isDisabled)}
     </div>
   </section>`;
 };
@@ -177,7 +175,7 @@ const formEditTemplate = (tripPoint, serverData, isEdit) => {
 
     </header>
     <section class="event__details">
-      ${tripEventOffersTemplate(offers, serverData.offersData, routeType)}
+      ${tripEventOffersTemplate(offers, serverData.offersData, routeType, isDisabled)}
       ${tripEventDestination(destination)}
     </section>
   </form>`;
@@ -361,6 +359,10 @@ class FormEdit extends SmartView {
   }
 
   _onInputDestinationBlur(evt) {
+    if (this._cities === null) {
+      this._cities = getCities(this._serverData.destinationsData);
+    }
+
     const value = makeСapitalizedLetter(evt.target.value);
     const isValid = this._cities.some((city) => city === value);
 
@@ -383,7 +385,7 @@ class FormEdit extends SmartView {
     this._offersNameSet.forEach((offer) => {
       updateOffers.push(this._formattedData.mapOffers.get(offer));
     });
-    console.log(updateOffers);
+
     this.updateData({
       offers: updateOffers
     }, true);
@@ -409,7 +411,7 @@ class FormEdit extends SmartView {
 
   _onInputPriceChange(evt) {
     this.updateData({
-      price: evt.target.value
+      price: +evt.target.value
     }, true);
   }
 

@@ -99,7 +99,7 @@ class Trip {
   _handleViewAction(actionType, updateType, update) {
     switch (actionType) {
       case UserAction.UPDATE_POINT:
-        // this._pointPresenter.get(update.id).setViewState(PointPresenterViewState.SAVING);
+        this._pointPresenter.get(update.id).setViewState(PointPresenterViewState.SAVING);
 
         this._api.updatePoint(update)
           .then((response) => {
