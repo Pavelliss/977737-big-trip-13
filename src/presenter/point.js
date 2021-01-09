@@ -10,6 +10,12 @@ const Mode = {
   EDITTING: `EDITTING`,
 };
 
+const State = {
+  SAVING: `SAVING`,
+  DELETING: `DELETING`,
+  ABORTING: `ABORTING`,
+};
+
 class Point {
   constructor(
       container,
@@ -82,6 +88,34 @@ class Point {
     }
   }
 
+  setViewState(state) {
+    const resetFormState = () => {
+      this._formEditComponent.updateData({
+        isDisabled: false,
+        isSaving: false,
+        isDeleting: false
+      });
+    };
+
+    switch (state) {
+      case State.SAVING:
+        this._formEditComponent.updateData({
+          isDisabled: true,
+          isSaving: true
+        });
+        break;
+      case State.DELETING:
+        this._formEditComponent.updateData({
+          isDisabled: true,
+          isDeleting: true
+        });
+        break;
+      case State.ABORTING:
+        this._tripPointComponent.shake(resetFormState);
+        this._formEditComponent.shake(resetFormState);
+    }
+  }
+
   _replaceTripPointToFormEdit() {
     replace(this._formEditComponent, this._tripPointComponent);
     this._changeMode();
@@ -147,5 +181,5 @@ class Point {
     );
   }
 }
-
+export {State};
 export default Point;

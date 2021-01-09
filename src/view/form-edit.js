@@ -11,8 +11,8 @@ const BLANK_NEW_EVENT = {
   routeType: `flight`,
   city: ``,
   time: {
-    start: dayjs(),
-    end: dayjs()
+    start: new Date(),
+    end: new Date()
   },
   price: 100,
   offers: [],
@@ -98,6 +98,16 @@ const tripEventOffersTemplate = (offers, offersData, routeType) => {
   </section>`;
 };
 
+const getResetButtonName = (isEdit, isDeleting) => {
+  if (isDeleting) {
+    return `Deleting...`;
+  } else if (isEdit) {
+    return `Delete`;
+  }
+
+  return `Cansel`;
+};
+
 const formEditTemplate = (tripPoint, serverData, isEdit) => {
   const {
     id,
@@ -106,8 +116,12 @@ const formEditTemplate = (tripPoint, serverData, isEdit) => {
     destination,
     time,
     price,
-    offers
+    offers,
+    isDisabled,
+    isSaving,
+    isDeleting
   } = tripPoint;
+
   return `<form class="event event--edit" action="#" method="post" autocomplete="off" >
     <header class="event__header">
       <div class="event__type-wrapper">
@@ -115,7 +129,7 @@ const formEditTemplate = (tripPoint, serverData, isEdit) => {
           <span class="visually-hidden">Choose event type</span>
           <img class="event__type-icon" width="17" height="17" src="img/icons/${routeType}.png" alt="Event type icon">
         </label>
-        <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox">
+        <input class="event__type-toggle  visually-hidden" id="event-type-toggle-${id}" type="checkbox" ${isDisabled ? `disabled` : ``}>
 
         <div class="event__type-list">
           <fieldset class="event__type-group">
@@ -129,7 +143,7 @@ const formEditTemplate = (tripPoint, serverData, isEdit) => {
         <label class="event__label  event__type-output" for="event-destination-${id}">
           ${makeСapitalizedLetter(routeType)}
         </label>
-        <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${he.encode(city)}" list="destination-list-${id}" required>
+        <input class="event__input  event__input--destination" id="event-destination-${id}" type="text" name="event-destination" value="${he.encode(city)}" list="destination-list-${id}" ${isDisabled ? `disabled` : ``} required>
         <datalist id="destination-list-${id}">
           ${createDestinationOptionTemplate(serverData.destinationsData)}
         </datalist>
@@ -137,10 +151,10 @@ const formEditTemplate = (tripPoint, serverData, isEdit) => {
 
       <div class="event__field-group  event__field-group--time">
         <label class="visually-hidden" for="event-start-time-${id}">From</label>
-        <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dayjs(time.start).format(`DD/MM/YY HH:mm `)}">
+        <input class="event__input  event__input--time" id="event-start-time-${id}" type="text" name="event-start-time" value="${dayjs(time.start).format(`DD/MM/YY HH:mm `)} ${isDisabled ? `disabled` : ``}">
         &mdash;
         <label class="visually-hidden" for="event-end-time-${id}">To</label>
-        <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dayjs(time.start).format(`DD/MM/YY HH:mm `)}">
+        <input class="event__input  event__input--time" id="event-end-time-${id}" type="text" name="event-end-time" value="${dayjs(time.start).format(`DD/MM/YY HH:mm `)} ${isDisabled ? `disabled` : ``}">
       </div>
 
       <div class="event__field-group  event__field-group--price">
@@ -148,11 +162,11 @@ const formEditTemplate = (tripPoint, serverData, isEdit) => {
           <span class="visually-hidden">Price</span>
           &euro;
         </label>
-        <input class="event__input  event__input--price" id="event-price-${id}" type="number" name="event-price" value="${price}">
+        <input class="event__input  event__input--price" id="event-price-${id}" type="number" name="event-price" value="${price}" ${isDisabled ? `disabled` : ``}>
       </div>
 
-      <button class="event__save-btn  btn  btn--blue" type="submit">Save</button>
-      <button class="event__reset-btn" type="reset">${isEdit ? `Delete` : `Cancel`}</button>
+      <button class="event__save-btn  btn  btn--blue" type="submit" ${isDisabled ? `disabled` : ``}>${isSaving ? `Saving...` : `Save`}</button>
+      <button class="event__reset-btn" type="reset" ${isDisabled ? `disabled` : ``}>${getResetButtonName(isEdit, isDeleting)}</button>
       ${isEdit ? `<button class="event__rollup-btn" type="button">
       <span class="visually-hidden">Open event</span>
       </button>` : ``}
@@ -172,12 +186,14 @@ class FormEdit extends SmartView {
       data = BLANK_NEW_EVENT
   ) {
     super();
+    this._isEditForm = data !== BLANK_NEW_EVENT;
 
-    this._data = data;
+    this._data = FormEdit.parseTripPointToData(data);
     this._cities = null;
     this._serverData = serverData;
     this._formattedData = formattedData;
 
+    this._isEditPoint = data !== BLANK_NEW_EVENT;
     this._offersNameSet = getSetOffersTitle(this._data.offers);
 
     this._onFormSubmitHandler = this._onFormSubmitHandler.bind(this);
@@ -193,9 +209,7 @@ class FormEdit extends SmartView {
   }
 
   getTemplate() {
-    const isEditPoint = this._data !== BLANK_NEW_EVENT ? true : false;
-
-    return formEditTemplate(this._data, this._serverData, isEditPoint);
+    return formEditTemplate(this._data, this._serverData, this._isEditForm);
   }
 
   reset(tripPoint) {
@@ -252,7 +266,7 @@ class FormEdit extends SmartView {
 
   _onFormSubmitHandler(evt) {
     evt.preventDefault();
-    this._callback.formSubmit(this._data);
+    this._callback.formSubmit(FormEdit.parseDataToTripPoint(this._data));
   }
 
   _onFormButtonClick() {
@@ -328,11 +342,24 @@ class FormEdit extends SmartView {
 
   static parseDataToTripPoint(data) {
     data = Object.assign({}, data);
+
+    delete data.isDisabled;
+    delete data.isSaving;
+    delete data.isDeleting;
+
     return data;
   }
 
   static parseTripPointToData(tripPoint) {
-    return Object.assign({}, tripPoint);
+    return Object.assign(
+        {},
+        tripPoint,
+        {
+          isDisabled: false,
+          isSaving: false,
+          isDeleting: false
+        }
+    );
   }
 }
 

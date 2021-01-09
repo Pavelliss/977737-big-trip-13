@@ -1,4 +1,3 @@
-import {nanoid} from "nanoid";
 import {UserAction, UpdateType} from "../const";
 import {remove, render, RenderPosition} from "../utils/render";
 import {isEscapeEvent} from "../utils/dom-events";
@@ -67,12 +66,31 @@ class NewPoint {
     document.removeEventListener(`keydown`, this._onEscKeyDown);
   }
 
+  setSaving() {
+    this._formEditComponent.updateData({
+      isDisabled: true,
+      isSaving: true
+    });
+  }
+
+  setAborting() {
+    const resetFormState = () => {
+      this._formEditComponent.updateData({
+        isDisabled: false,
+        isSaving: false
+      });
+    };
+
+
+    this._formEditComponent.shake(resetFormState);
+  }
+
   _onFormSubmit(point) {
     this._newButtonComponent.getElement().removeAttribute(`disabled`);
     this._changeData(
         UserAction.ADD_POINT,
         UpdateType.MINOR,
-        Object.assign({id: nanoid()}, point)
+        point
     );
   }
 
