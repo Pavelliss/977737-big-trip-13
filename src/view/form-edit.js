@@ -359,7 +359,7 @@ class FormEdit extends SmartView {
   }
 
   _onInputDestinationBlur(evt) {
-    if (this._cities === null) {
+    if (!this._cities) {
       this._cities = getCities(this._serverData.destinationsData);
     }
 
