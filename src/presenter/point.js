@@ -70,7 +70,8 @@ class Point {
     }
 
     if (this._mode === Mode.EDITTING) {
-      replace(this._formEditComponent, prevFormEditComponent);
+      replace(this._tripPointComponent, prevFormEditComponent);
+      this._mode = Mode.DEFAULT;
     }
 
     remove(prevTripPointComponent);
@@ -151,7 +152,6 @@ class Point {
   }
 
   _onFormSubmit(point) {
-    this._hideFormEdit();
     this._changeData(
         UserAction.UPDATE_POINT,
         UpdateType.PATCH,
