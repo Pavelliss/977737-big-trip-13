@@ -34,6 +34,11 @@ const FilterType = {
   PAST: `past`,
 };
 
+const MenuItem = {
+  TABLE: `TABLE`,
+  STATISTICS: `STATISTICS`,
+};
+
 
 export {
   END_POINT,
@@ -44,4 +49,5 @@ export {
   UserAction,
   UpdateType,
   FilterType,
+  MenuItem,
 };

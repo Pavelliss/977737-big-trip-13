@@ -1,4 +1,4 @@
-import {END_POINT, AUTHORIZATION, UpdateType} from "./const";
+import {END_POINT, AUTHORIZATION, UpdateType, MenuItem} from "./const";
 import {getMapOffers} from "./utils/util";
 import {render, RenderPosition} from "./utils/render";
 
@@ -13,6 +13,7 @@ import TripInfoView from "./view/trip-info";
 import TripControlsView from "./view/trip-controls";
 import NewButtonView from "./view/new-event-button";
 import FilterTitleView from "./view/filter-title";
+import StatisticView from "./view/statistics";
 
 // presenter
 import TripPresenter from "./presenter/trip";
@@ -62,6 +63,20 @@ const checkDataLoading = () => {
   initTripList();
 };
 
+const onControlClick = (menuItem) => {
+  switch (menuItem) {
+    case MenuItem.TABLE:
+      tripComponent.destroy();
+      tripComponent.init();
+      break;
+    case MenuItem.STATISTICS:
+      tripComponent.destroy();
+      // show the statistic block
+      break;
+  }
+};
+
+
 const pointsModel = new PointsModel();
 const filterModel = new FilterModel();
 
@@ -85,7 +100,9 @@ const tripComponent = new TripPresenter(
     formattedData
 );
 
-tripComponent.init();
+//tripComponent.init();
+render(tripEvents, new StatisticView());
+tripControlsComponent.setControlClickHandler(onControlClick);
 
 newButtonComponent.getElement().addEventListener(`click`, () => {
   tripComponent.createNewPoint();
