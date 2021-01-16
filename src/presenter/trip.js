@@ -87,6 +87,14 @@ class Trip {
     this._filterModel.removeObserver(this._handleModeEvent);
   }
 
+  show() {
+    this._container.classList.remove(`trip-events--hidden`);
+  }
+
+  hide() {
+    this._container.classList.add(`trip-events--hidden`);
+  }
+
   _getPoinsts() {
     const filterType = this._filterModel.getFilter();
     const tripPoints = this._pointsModel.getPoints();

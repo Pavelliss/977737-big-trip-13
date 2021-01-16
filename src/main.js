@@ -1,6 +1,12 @@
-import {END_POINT, AUTHORIZATION, UpdateType, MenuItem} from "./const";
+import {
+  END_POINT,
+  AUTHORIZATION,
+  UpdateType,
+  MenuItem,
+  FilterType
+} from "./const";
 import {getMapOffers} from "./utils/util";
-import {render, RenderPosition} from "./utils/render";
+import {remove, render, RenderPosition} from "./utils/render";
 
 import Api from "./api";
 
@@ -19,6 +25,12 @@ import StatisticView from "./view/statistics";
 import TripPresenter from "./presenter/trip";
 import FilterPresenter from "./presenter/filter";
 
+const pageBody = document.querySelector(`.page-body`);
+const tripMain = pageBody.querySelector(`.trip-main`);
+const pageMain = pageBody.querySelector(`.page-body__page-main `);
+const pageBodyContainer = pageMain.querySelector(`.page-body__container`);
+const tripEvents = pageMain.querySelector(`.trip-events`);
+
 const api = new Api(END_POINT, AUTHORIZATION);
 
 const dataLoad = {
@@ -36,6 +48,8 @@ const serverData = {
 const formattedData = {
   mapOffers: null
 };
+
+let statisticsComponent = null;
 
 const initTripList = () => {
   pointsModel.setPoints(UpdateType.INIT, serverData.pointsData);
@@ -66,23 +80,24 @@ const checkDataLoading = () => {
 const onControlClick = (menuItem) => {
   switch (menuItem) {
     case MenuItem.TABLE:
-      tripComponent.destroy();
-      tripComponent.init();
+      tripComponent.show();
+      remove(statisticsComponent);
+      newButtonComponent.getElement().removeAttribute(`disabled`);
       break;
     case MenuItem.STATISTICS:
-      tripComponent.destroy();
-      // show the statistic block
+      filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
+      tripComponent.hide();
+      statisticsComponent = new StatisticView(serverData.pointsData);
+
+      render(pageBodyContainer, statisticsComponent);
+
+      newButtonComponent.getElement().setAttribute(`disabled`, `disabled`);
       break;
   }
 };
 
-
 const pointsModel = new PointsModel();
 const filterModel = new FilterModel();
-
-const pageBody = document.querySelector(`.page-body`);
-const tripMain = pageBody.querySelector(`.trip-main`);
-const tripEvents = pageBody.querySelector(`.trip-events`);
 
 render(tripMain, new TripInfoView(), RenderPosition.AFTERBEGIN);
 
@@ -100,8 +115,8 @@ const tripComponent = new TripPresenter(
     formattedData
 );
 
-//tripComponent.init();
-render(tripEvents, new StatisticView());
+tripComponent.init();
+
 tripControlsComponent.setControlClickHandler(onControlClick);
 
 newButtonComponent.getElement().addEventListener(`click`, () => {
