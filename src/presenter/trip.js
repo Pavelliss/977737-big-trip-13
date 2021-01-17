@@ -39,7 +39,7 @@ class Trip {
     this._formattedData = formattedData;
     this._api = api;
 
-    this._currentSortType = SortType.DAY;
+    this._currentSortType = null;
     this._isLoading = true;
 
     this._sortComponent = null;
@@ -54,13 +54,14 @@ class Trip {
     this._handleModeEvent = this._handleModeEvent.bind(this);
     this._handleModeChange = this._handleModeChange.bind(this);
     this._handleSortChange = this._handleSortChange.bind(this);
-
-    this._pointsModel.addObserver(this._handleModeEvent);
-    this._filterModel.addObserver(this._handleModeEvent);
   }
 
   init() {
+    this._currentSortType = SortType.DAY;
     this._pointPresenter = new Map();
+    this._pointsModel.addObserver(this._handleModeEvent);
+    this._filterModel.addObserver(this._handleModeEvent);
+
     this._renderTripEventList(this._getPoinsts());
   }
 
@@ -77,6 +78,21 @@ class Trip {
     );
 
     this._newPointComponent.init();
+  }
+
+  destroy() {
+    this._clearTripEventList();
+
+    this._pointsModel.removeObserver(this._handleModeEvent);
+    this._filterModel.removeObserver(this._handleModeEvent);
+  }
+
+  show() {
+    this._container.classList.remove(`trip-events--hidden`);
+  }
+
+  hide() {
+    this._container.classList.add(`trip-events--hidden`);
   }
 
   _getPoinsts() {
