@@ -2,6 +2,8 @@ import Chart from "chart.js";
 import dayjs from "dayjs";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import SmartView from "./smart";
+import {HOURS_IN_DAY} from "../const";
+
 
 const renderCharts = (element, data) => {
   const moneyCtx = element.querySelector(`.statistics__chart--money`);
@@ -157,6 +159,17 @@ const renderTypeChart = (typeCtx, routeTypes, typesCount) => {
   });
 };
 
+const formatedTime = (time) => {
+  let remainder = time % 24;
+  if (time < HOURS_IN_DAY) {
+    return `${time}H`;
+  } else if (remainder === 0) {
+    return `${Math.floor(time / HOURS_IN_DAY)}D`;
+  }
+
+  return `${Math.floor(time / HOURS_IN_DAY)}D ${remainder}H`;
+};
+
 const renderTimeSpendChart = (timeCtx, routeTypes, timeSpend) => {
   return new Chart(timeCtx, {
     plugins: [ChartDataLabels],
@@ -179,7 +192,7 @@ const renderTimeSpendChart = (timeCtx, routeTypes, timeSpend) => {
           color: `#000000`,
           anchor: `end`,
           align: `start`,
-          formatter: (val) => `${val}H`
+          formatter: (val) => formatedTime(val)
         }
       },
       title: {
@@ -233,7 +246,7 @@ const calcStatisticData = (data) => {
       statistic = {
         price: map.get(point.routeType).price + point.price,
         count: map.get(point.routeType).count + 1,
-        timeSpend: map.get(point.routeType).timeSpend + (dayjs(point.time.end).diff(point.time.start, `day`)),
+        timeSpend: map.get(point.routeType).timeSpend + (dayjs(point.time.end).diff(point.time.start, `hours`)),
       };
 
       map.set(point.routeType, statistic);
@@ -243,7 +256,6 @@ const calcStatisticData = (data) => {
         count: 1,
         timeSpend: dayjs(point.time.end).diff(point.time.start, `hours`),
       };
-
       map.set(point.routeType, statistic);
     }
   });

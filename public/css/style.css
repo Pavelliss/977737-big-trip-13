@@ -192,7 +192,9 @@ main {
   width: 600px; }
 
 .trip-main__event-add-btn {
-  min-width: 170px; }
+  min-width: 170px;
+  margin-left: auto;
+}
   .trip-main__event-add-btn::before {
     content: "\002B\000A0"; }
   .trip-main__event-add-btn--hidden {
