@@ -82,11 +82,11 @@ class NewPoint {
     };
 
 
-    this._formEditComponent.shake(resetFormState);
+    this._formEditComponent.getShake(resetFormState);
   }
 
   _onFormSubmit(point) {
-    this._newButtonComponent.getElement().removeAttribute(`disabled`);
+    this._newButtonComponent.enabled();
     this._changeData(
         UserAction.ADD_POINT,
         UpdateType.MINOR,

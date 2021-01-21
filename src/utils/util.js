@@ -53,6 +53,10 @@ const getSetOffersTitle = (offers) => {
   return set;
 };
 
+const isOnline = () => {
+  return window.navigator.onLine;
+};
+
 export {
   makeСapitalizedLetter,
   updateItem,
@@ -61,4 +65,5 @@ export {
   sortPointTime,
   getMapOffers,
   getSetOffersTitle,
+  isOnline,
 };

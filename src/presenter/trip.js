@@ -1,6 +1,10 @@
 import {remove, render, RenderPosition} from "../utils/render";
 import {filter} from "../utils/filter";
-import {sortPointPrice, sortPointTime, sortPointDay} from "../utils/util";
+import {
+  sortPointPrice,
+  sortPointTime,
+  sortPointDay
+} from "../utils/util";
 
 import {
   SortType,
@@ -216,8 +220,11 @@ class Trip {
   _renderTripEventList() {
     if (this._isLoading) {
       this._renderLoading();
+      this._newButtonComponent.disabled();
       return;
     }
+
+    this._newButtonComponent.enabled();
 
     const points = this._getPoinsts();
 

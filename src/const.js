@@ -1,7 +1,8 @@
 const END_POINT = `https://13.ecmascript.pages.academy/big-trip`;
 const AUTHORIZATION = `Basic Speaking_in_Tongues [SPiT]`;
+const HOURS_IN_DAY = 24;
 
-const routeTypes = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`];
+const ROUTE_TYPES = [`taxi`, `bus`, `train`, `ship`, `transport`, `drive`, `flight`, `check-in`, `sightseeing`, `restaurant`];
 
 const TimeMS = {
   day: 86400000,
@@ -43,7 +44,8 @@ const MenuItem = {
 export {
   END_POINT,
   AUTHORIZATION,
-  routeTypes,
+  HOURS_IN_DAY,
+  ROUTE_TYPES,
   TimeMS,
   SortType,
   UserAction,

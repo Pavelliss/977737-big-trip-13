@@ -112,8 +112,8 @@ class Point {
         });
         break;
       case State.ABORTING:
-        this._tripPointComponent.shake(resetFormState);
-        this._formEditComponent.shake(resetFormState);
+        this._tripPointComponent.getShake(resetFormState);
+        this._formEditComponent.getShake(resetFormState);
     }
   }
 

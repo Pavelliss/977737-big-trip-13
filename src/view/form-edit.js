@@ -4,7 +4,7 @@ import {nanoid} from "nanoid";
 
 import SmartView from "./smart";
 
-import {routeTypes} from "../const";
+import {ROUTE_TYPES} from "../const";
 import {makeСapitalizedLetter, getSetOffersTitle} from "../utils/util";
 
 import flatpickr from "flatpickr";
@@ -42,7 +42,7 @@ const createDestinationOptionTemplate = (destinations) => {
 };
 
 const createTripEventTypeTemplate = (id, routeType) => {
-  return routeTypes.map((type) => {
+  return ROUTE_TYPES.map((type) => {
     return `<div class="event__type-item">
     <input id="event-type-${type}-${id}" class="event__type-input  visually-hidden" type="radio" name="event-type" value="${type}" ${routeType === type ? `checked` : ``}>
     <label class="event__type-label  event__type-label--${type}" for="event-type-${type}-${id}">${makeСapitalizedLetter(type)}</label>
@@ -291,6 +291,7 @@ class FormEdit extends SmartView {
         {
           dateFormat: `d/m/y H:i`,
           minDate: `today`,
+          maxDate: this._data.time.end,
           enableTime: true,
           onChange: this._onDateStartChange
         }
