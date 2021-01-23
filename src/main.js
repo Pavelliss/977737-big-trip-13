@@ -21,7 +21,7 @@ import FilterModel from "./model/filter";
 // view
 import TripInfoView from "./view/trip-info";
 import TripControlsView from "./view/trip-controls";
-import NewButtonView from "./view/new-event-button";
+import NewButtonView from "./view/new-button";
 import StatisticView from "./view/statistics";
 
 // presenter

@@ -92,30 +92,30 @@ class TripEvent extends AbstractView {
     super();
     this._tripPoint = tripPoint;
 
-    this._buttonClickHandler = this._buttonClickHandler.bind(this);
-    this._buttonFavoriteClickHandler = this._buttonFavoriteClickHandler.bind(this);
+    this._onButtonClick = this._onButtonClick.bind(this);
+    this._onButtonFavoriteClick = this._onButtonFavoriteClick.bind(this);
   }
 
   getTemplate() {
     return tripEventTemplate(this._tripPoint);
   }
 
-  _buttonClickHandler() {
+  _onButtonClick() {
     this._callback.buttonClick();
   }
 
-  _buttonFavoriteClickHandler() {
+  _onButtonFavoriteClick() {
     this._callback.favoriteClick();
   }
 
   setButtonClickHandler(callback) {
     this._callback.buttonClick = callback;
-    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._buttonClickHandler);
+    this.getElement().querySelector(`.event__rollup-btn`).addEventListener(`click`, this._onButtonClick);
   }
 
   setButtonFavoriteHandler(callback) {
     this._callback.favoriteClick = callback;
-    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, this._buttonFavoriteClickHandler);
+    this.getElement().querySelector(`.event__favorite-btn`).addEventListener(`click`, this._onButtonFavoriteClick);
   }
 }
 

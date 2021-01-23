@@ -14,7 +14,7 @@ import {
 } from "../const";
 
 // view
-import SortView from "../view/trip-sort";
+import SortView from "../view/sort";
 import TripEventListView from "../view/trip-events-list";
 import ListEmptyView from "../view/list-empty";
 import TripEventsItemView from "../view/trip-events-item";
@@ -102,18 +102,18 @@ class Trip {
   _getPoinsts() {
     const filterType = this._filterModel.getFilter();
     const tripPoints = this._pointsModel.getPoints();
-    const filtredTasks = filter[filterType](tripPoints);
+    const filtredPoints = filter[filterType](tripPoints);
 
     switch (this._currentSortType) {
       case SortType.DAY:
-        return filtredTasks.sort(sortPointDay);
+        return filtredPoints.sort(sortPointDay);
       case SortType.PRICE:
-        return filtredTasks.sort(sortPointPrice);
+        return filtredPoints.sort(sortPointPrice);
       case SortType.TIME:
-        return filtredTasks.sort(sortPointTime);
+        return filtredPoints.sort(sortPointTime);
     }
 
-    return filtredTasks;
+    return filtredPoints;
   }
 
   _handleViewAction(actionType, updateType, update) {
