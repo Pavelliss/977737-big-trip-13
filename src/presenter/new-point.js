@@ -89,7 +89,7 @@ class NewPoint {
     this._newButtonComponent.enabled();
     this._changeData(
         UserAction.ADD_POINT,
-        UpdateType.MINOR,
+        UpdateType.MAJOR,
         point
     );
   }

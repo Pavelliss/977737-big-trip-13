@@ -232,14 +232,11 @@ class FormEdit extends SmartView {
   }
 
   setFormButtonClickHandler(callback) {
-    this._callback.formButtonClick = callback;
-
     const buttonElement = this.getElement().querySelector(`.event__rollup-btn`);
-
     if (!buttonElement) {
       return;
     }
-
+    this._callback.formButtonClick = callback;
     buttonElement.addEventListener(`click`, this._onFormButtonClick);
   }
 

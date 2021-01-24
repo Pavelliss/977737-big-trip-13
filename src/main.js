@@ -78,7 +78,8 @@ const tripComponent = new TripPresenter(
     newButtonComponent,
     apiWithProviderPoints,
     serverData,
-    formattedData
+    formattedData,
+    filterPresenter
 );
 
 const initTripList = () => {
@@ -102,13 +103,14 @@ const checkDataLoading = () => {
 
   formattedData.mapOffers = getMapOffers(serverData.offersData);
 
-  renderComponents();
   initTripList();
+  renderComponents();
 };
 
 const onControlClick = (menuItem) => {
   switch (menuItem) {
     case MenuItem.TABLE:
+
       tripComponent.show();
 
       if (statisticsComponent !== null) {
@@ -116,8 +118,12 @@ const onControlClick = (menuItem) => {
       }
 
       newButtonComponent.enabled();
+      filterPresenter.enabled();
+      filterPresenter.init();
       break;
     case MenuItem.STATISTICS:
+      filterPresenter.disabled();
+
       filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
       tripComponent.hide();
 

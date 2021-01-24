@@ -1,5 +1,4 @@
 import {remove, render, RenderPosition} from "../utils/render";
-import {filter} from "../utils/filter";
 import {
   sortPointPrice,
   sortPointTime,
@@ -33,7 +32,8 @@ class Trip {
       newButtonComponent,
       api,
       serverData,
-      formattedData
+      formattedData,
+      filterPresenter
   ) {
 
     this._container = container;
@@ -42,6 +42,7 @@ class Trip {
     this._serverData = serverData;
     this._formattedData = formattedData;
     this._api = api;
+    this._filterPresenter = filterPresenter;
 
     this._currentSortType = null;
     this._isLoading = true;
@@ -100,9 +101,12 @@ class Trip {
   }
 
   _getPoinsts() {
-    const filterType = this._filterModel.getFilter();
     const tripPoints = this._pointsModel.getPoints();
-    const filtredPoints = filter[filterType](tripPoints);
+    const filterType = this._filterModel.getFilter();
+
+    this._filterModel.getFiltredPoints(tripPoints);
+
+    const filtredPoints = this._filterModel.filtredPoints[filterType];
 
     switch (this._currentSortType) {
       case SortType.DAY:
@@ -166,6 +170,7 @@ class Trip {
       case UpdateType.MAJOR:
         this._clearTripEventList({resetSortType: true});
         this._renderTripEventList();
+        this._filterPresenter.init();
         break;
       case UpdateType.INIT:
         this._isLoading = false;
