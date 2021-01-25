@@ -23,7 +23,7 @@ class Sort extends AbstractView {
     super();
 
     this._currentSortType = currentSortType;
-    this._sortTypeChangeHandler = this._sortTypeChangeHandler.bind(this);
+    this._onSortTypeChange = this._onSortTypeChange.bind(this);
   }
 
   getTemplate() {
@@ -34,10 +34,10 @@ class Sort extends AbstractView {
 
   setSortTypeChangeHandler(callback) {
     this._callback.sortTypeChange = callback;
-    this.getElement().addEventListener(`change`, this._sortTypeChangeHandler);
+    this.getElement().addEventListener(`change`, this._onSortTypeChange);
   }
 
-  _sortTypeChangeHandler(evt) {
+  _onSortTypeChange(evt) {
     this._callback.sortTypeChange(evt.target.value);
   }
 }

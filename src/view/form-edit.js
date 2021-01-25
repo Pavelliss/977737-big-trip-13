@@ -199,7 +199,7 @@ class FormEdit extends SmartView {
     this._isEditPoint = data !== BLANK_NEW_EVENT;
     this._offersNameSet = getSetOffersTitle(this._data.offers);
 
-    this._onFormSubmitHandler = this._onFormSubmitHandler.bind(this);
+    this._onFormSubmit = this._onFormSubmit.bind(this);
     this._onFormButtonClick = this._onFormButtonClick.bind(this);
     this._onFormDeleteClick = this._onFormDeleteClick.bind(this);
     this._onInputRadioClick = this._onInputRadioClick.bind(this);
@@ -228,18 +228,15 @@ class FormEdit extends SmartView {
 
   setFormSubmitHandler(callback) {
     this._callback.formSubmit = callback;
-    this.getElement().addEventListener(`submit`, this._onFormSubmitHandler);
+    this.getElement().addEventListener(`submit`, this._onFormSubmit);
   }
 
   setFormButtonClickHandler(callback) {
-    this._callback.formButtonClick = callback;
-
     const buttonElement = this.getElement().querySelector(`.event__rollup-btn`);
-
     if (!buttonElement) {
       return;
     }
-
+    this._callback.formButtonClick = callback;
     buttonElement.addEventListener(`click`, this._onFormButtonClick);
   }
 
@@ -310,7 +307,7 @@ class FormEdit extends SmartView {
     );
   }
 
-  _onFormSubmitHandler(evt) {
+  _onFormSubmit(evt) {
     evt.preventDefault();
     this._callback.formSubmit(FormEdit.parseDataToTripPoint(this._data));
   }

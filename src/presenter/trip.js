@@ -1,5 +1,4 @@
 import {remove, render, RenderPosition} from "../utils/render";
-import {filter} from "../utils/filter";
 import {
   sortPointPrice,
   sortPointTime,
@@ -14,7 +13,7 @@ import {
 } from "../const";
 
 // view
-import SortView from "../view/trip-sort";
+import SortView from "../view/sort";
 import TripEventListView from "../view/trip-events-list";
 import ListEmptyView from "../view/list-empty";
 import TripEventsItemView from "../view/trip-events-item";
@@ -33,7 +32,9 @@ class Trip {
       newButtonComponent,
       api,
       serverData,
-      formattedData
+      formattedData,
+      filterPresenter,
+      tripInfoPresenter
   ) {
 
     this._container = container;
@@ -42,6 +43,8 @@ class Trip {
     this._serverData = serverData;
     this._formattedData = formattedData;
     this._api = api;
+    this._filterPresenter = filterPresenter;
+    this._tripInfoPresenter = tripInfoPresenter;
 
     this._currentSortType = null;
     this._isLoading = true;
@@ -100,20 +103,23 @@ class Trip {
   }
 
   _getPoinsts() {
-    const filterType = this._filterModel.getFilter();
     const tripPoints = this._pointsModel.getPoints();
-    const filtredTasks = filter[filterType](tripPoints);
+    const filterType = this._filterModel.getFilter();
+
+    this._filterModel.getFiltredPoints(tripPoints);
+
+    const filtredPoints = this._filterModel.filtredPoints[filterType];
 
     switch (this._currentSortType) {
       case SortType.DAY:
-        return filtredTasks.sort(sortPointDay);
+        return filtredPoints.sort(sortPointDay);
       case SortType.PRICE:
-        return filtredTasks.sort(sortPointPrice);
+        return filtredPoints.sort(sortPointPrice);
       case SortType.TIME:
-        return filtredTasks.sort(sortPointTime);
+        return filtredPoints.sort(sortPointTime);
     }
 
-    return filtredTasks;
+    return filtredPoints;
   }
 
   _handleViewAction(actionType, updateType, update) {
@@ -158,14 +164,18 @@ class Trip {
     switch (updateType) {
       case UpdateType.PATCH:
         this._pointPresenter.get(data[`id`]).init(data);
+        this._tripInfoPresenter.init();
         break;
       case UpdateType.MINOR:
         this._clearTripEventList();
         this._renderTripEventList();
+        this._tripInfoPresenter.init();
         break;
       case UpdateType.MAJOR:
         this._clearTripEventList({resetSortType: true});
         this._renderTripEventList();
+        this._filterPresenter.init();
+        this._tripInfoPresenter.init();
         break;
       case UpdateType.INIT:
         this._isLoading = false;

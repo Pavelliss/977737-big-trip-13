@@ -19,14 +19,14 @@ import PointsModel from "./model/points";
 import FilterModel from "./model/filter";
 
 // view
-import TripInfoView from "./view/trip-info";
 import TripControlsView from "./view/trip-controls";
-import NewButtonView from "./view/new-event-button";
+import NewButtonView from "./view/new-button";
 import StatisticView from "./view/statistics";
 
 // presenter
 import TripPresenter from "./presenter/trip";
 import FilterPresenter from "./presenter/filter";
+import TripInfoPresenter from "./presenter/trip-info";
 
 const STORE_PREFIX = `big-trip-cache`;
 const STORE_VER = `v13`;
@@ -68,6 +68,7 @@ let statisticsComponent = null;
 
 const pointsModel = new PointsModel();
 const filterModel = new FilterModel();
+const tripInfoPresenter = new TripInfoPresenter(tripMain, pointsModel);
 const tripControlsComponent = new TripControlsView();
 const filterPresenter = new FilterPresenter(tripControlsComponent, filterModel);
 const newButtonComponent = new NewButtonView();
@@ -78,7 +79,9 @@ const tripComponent = new TripPresenter(
     newButtonComponent,
     apiWithProviderPoints,
     serverData,
-    formattedData
+    formattedData,
+    filterPresenter,
+    tripInfoPresenter
 );
 
 const initTripList = () => {
@@ -87,7 +90,7 @@ const initTripList = () => {
 
 const renderComponents = () => {
   render(tripMain, tripControlsComponent, RenderPosition.AFTERBEGIN);
-  render(tripMain, new TripInfoView(), RenderPosition.AFTERBEGIN);
+  tripInfoPresenter.init();
   filterPresenter.init();
 };
 
@@ -102,13 +105,14 @@ const checkDataLoading = () => {
 
   formattedData.mapOffers = getMapOffers(serverData.offersData);
 
-  renderComponents();
   initTripList();
+  renderComponents();
 };
 
 const onControlClick = (menuItem) => {
   switch (menuItem) {
     case MenuItem.TABLE:
+
       tripComponent.show();
 
       if (statisticsComponent !== null) {
@@ -116,8 +120,12 @@ const onControlClick = (menuItem) => {
       }
 
       newButtonComponent.enabled();
+      filterPresenter.enabled();
+      filterPresenter.init();
       break;
     case MenuItem.STATISTICS:
+      filterPresenter.disabled();
+
       filterModel.setFilter(UpdateType.MAJOR, FilterType.EVERYTHING);
       tripComponent.hide();
 

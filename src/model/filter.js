@@ -1,19 +1,30 @@
 import Observer from "../utils/observer";
 import {FilterType} from "../const";
+import {filter} from "../utils/filter";
 
 class Filter extends Observer {
   constructor() {
     super();
     this._activeFilter = FilterType.EVERYTHING;
+
+    this.filtredPoints = null;
   }
 
-  setFilter(updateType, filter) {
-    this._activeFilter = filter;
-    this._notyfy(updateType, filter);
+  setFilter(updateType, activeFilter) {
+    this._activeFilter = activeFilter;
+    this._notyfy(updateType, activeFilter);
   }
 
   getFilter() {
     return this._activeFilter;
+  }
+
+  getFiltredPoints(points) {
+    this.filtredPoints = {
+      [FilterType.EVERYTHING]: filter[FilterType.EVERYTHING](points),
+      [FilterType.FUTURE]: filter[FilterType.FUTURE](points),
+      [FilterType.PAST]: filter[FilterType.PAST](points)
+    };
   }
 }
 

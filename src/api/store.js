@@ -40,9 +40,9 @@ class Store {
 
     delete store[key];
 
-    this.storage.setItems(
+    this._storage.setItem(
         this._storeKey,
-        JSON.storage(store)
+        JSON.stringify(store)
     );
   }
 }
