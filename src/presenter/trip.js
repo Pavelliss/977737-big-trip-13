@@ -33,7 +33,8 @@ class Trip {
       api,
       serverData,
       formattedData,
-      filterPresenter
+      filterPresenter,
+      tripInfoPresenter
   ) {
 
     this._container = container;
@@ -43,6 +44,7 @@ class Trip {
     this._formattedData = formattedData;
     this._api = api;
     this._filterPresenter = filterPresenter;
+    this._tripInfoPresenter = tripInfoPresenter;
 
     this._currentSortType = null;
     this._isLoading = true;
@@ -162,15 +164,18 @@ class Trip {
     switch (updateType) {
       case UpdateType.PATCH:
         this._pointPresenter.get(data[`id`]).init(data);
+        this._tripInfoPresenter.init();
         break;
       case UpdateType.MINOR:
         this._clearTripEventList();
         this._renderTripEventList();
+        this._tripInfoPresenter.init();
         break;
       case UpdateType.MAJOR:
         this._clearTripEventList({resetSortType: true});
         this._renderTripEventList();
         this._filterPresenter.init();
+        this._tripInfoPresenter.init();
         break;
       case UpdateType.INIT:
         this._isLoading = false;

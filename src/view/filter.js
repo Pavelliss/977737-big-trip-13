@@ -17,7 +17,7 @@ const filterElementTemplate = (
   </div>`;
 };
 
-const filterTemplate = (currentFilterType, filtredPoints,isDisabled) => {
+const filterTemplate = (currentFilterType, filtredPoints, isDisabled) => {
   return `<form class="trip-filters" action="#" method="get">
     ${filterElementTemplate(`everything`, currentFilterType, filtredPoints, isDisabled)}
     ${filterElementTemplate(`future`, currentFilterType, filtredPoints, isDisabled)}
