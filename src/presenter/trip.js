@@ -186,7 +186,7 @@ class Trip {
   }
 
   _handleModeChange() {
-    for (let presenter of this._pointPresenter.values()) {
+    for (const presenter of this._pointPresenter.values()) {
       presenter.resetView();
     }
   }
@@ -265,7 +265,7 @@ class Trip {
   }
 
   _clearTripEventList({resetSortType = false} = {}) {
-    for (let presenter of this._pointPresenter.values()) {
+    for (const presenter of this._pointPresenter.values()) {
       presenter.destroy();
     }
 
