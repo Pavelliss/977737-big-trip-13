@@ -160,7 +160,7 @@ const renderTypeChart = (typeCtx, routeTypes, typesCount) => {
 };
 
 const formatedTime = (time) => {
-  let remainder = time % 24;
+  const remainder = time % 24;
   if (time < HOURS_IN_DAY) {
     return `${time}H`;
   } else if (remainder === 0) {
